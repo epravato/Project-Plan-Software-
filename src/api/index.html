@@ -6,15 +6,22 @@
 <title>H2M Project Plan Generator</title>
 <style>
   :root {
-    --bg: #F4F3EF;
+    /* H2M brand */
+    --h2m-blue: #6790B1;
+    --h2m-blue-dark: #4A7594;
+    --h2m-green: #A2C037;
+    --h2m-green-dark: #7D9628;
+    --h2m-gray: #58585A;
+
+    --bg: #F2F3F0;
     --surface: #FFFFFF;
-    --border: #C9D4E0;
-    --accent: #1F5C99;
-    --accent-light: #E8EFF7;
-    --text: #1A1F28;
-    --muted: #5A6270;
-    --green: #1A7A4A;
-    --green-bg: #E6F4EC;
+    --border: #D3DAE1;
+    --accent: #4A7594;
+    --accent-light: #E9F0F5;
+    --text: #2E2E30;
+    --muted: #6B6B6E;
+    --green: #7D9628;
+    --green-bg: #F0F5DF;
     --amber: #7A4F10;
     --amber-bg: #FDF3E0;
     --red: #8B1A1A;
@@ -24,19 +31,42 @@
 
   header {
     background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 32px;
+    border-bottom: 3px solid var(--h2m-green);
+    padding: 14px 32px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
   }
-  .logo { font-family: Georgia, serif; font-size: 20px; color: var(--accent); font-weight: normal; }
-  .logo span { color: var(--muted); font-size: 13px; font-family: system-ui, sans-serif; margin-left: 8px; }
+  /* H2M tile mark */
+  .mark {
+    display: grid;
+    grid-template-columns: repeat(2, 17px);
+    grid-template-rows: repeat(2, 17px);
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .mark i {
+    display: block;
+    color: #fff;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 17px;
+    text-align: center;
+    font-family: system-ui, sans-serif;
+  }
+  .mark .t-h { background: var(--h2m-green); }
+  .mark .t-2 { background: var(--h2m-gray); }
+  .mark .t-blank { background: transparent; }
+  .mark .t-m { background: var(--h2m-blue); }
+
+  .logo { font-family: Georgia, serif; font-size: 19px; color: var(--h2m-gray); font-weight: normal; line-height: 1.2; }
+  .logo span { display: block; color: var(--muted); font-size: 12px; font-family: system-ui, sans-serif; letter-spacing: 0.02em; }
 
   .steps { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--surface); padding: 0 32px; }
   .step { padding: 12px 20px; font-size: 13px; color: var(--muted); border-bottom: 2px solid transparent; cursor: default; }
-  .step.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
-  .step.done { color: var(--green); }
+  .step.active { color: var(--h2m-blue-dark); border-bottom-color: var(--h2m-blue); font-weight: 600; }
+  .step.done { color: var(--h2m-green-dark); border-bottom-color: var(--h2m-green); }
 
   main { max-width: 860px; margin: 40px auto; padding: 0 24px 80px; }
 
@@ -140,7 +170,7 @@
   .flag { display: inline-block; font-size: 11px; font-weight: 600; background: var(--amber-bg); color: var(--amber); border-radius: 3px; padding: 2px 7px; margin-left: 8px; }
 
   /* Download panel */
-  .success-box { background: var(--green-bg); border: 1px solid #A8D5BB; border-radius: 8px; padding: 32px; text-align: center; }
+  .success-box { background: var(--green-bg); border: 1px solid var(--h2m-green); border-left: 4px solid var(--h2m-green); border-radius: 8px; padding: 32px; text-align: center; }
   .success-box .icon { font-size: 40px; margin-bottom: 12px; }
   .success-box h3 { font-family: Georgia, serif; font-size: 20px; font-weight: normal; color: var(--green); margin-bottom: 8px; }
   .success-box p { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
@@ -153,7 +183,10 @@
 <body>
 
 <header>
-  <div class="logo">H2M <span>Project Plan Generator</span></div>
+  <div class="mark" aria-label="H2M">
+    <i class="t-h">H</i><i class="t-2">2</i><i class="t-blank"></i><i class="t-m">M</i>
+  </div>
+  <div class="logo">Project Plan Generator<span>architects + engineers</span></div>
 </header>
 
 <div class="steps">
