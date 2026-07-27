@@ -1,0 +1,7 @@
+markitdown[all]
+python-docx
+fastapi
+uvicorn[standard]
+python-multipart
+openai
+python-dotenv
