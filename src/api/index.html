@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H2M Project Plan Generator</title>
+<style>
+  :root {
+    --bg: #F4F3EF;
+    --surface: #FFFFFF;
+    --border: #C9D4E0;
+    --accent: #1F5C99;
+    --accent-light: #E8EFF7;
+    --text: #1A1F28;
+    --muted: #5A6270;
+    --green: #1A7A4A;
+    --green-bg: #E6F4EC;
+    --amber: #7A4F10;
+    --amber-bg: #FDF3E0;
+    --red: #8B1A1A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.6; }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo { font-family: Georgia, serif; font-size: 20px; color: var(--accent); font-weight: normal; }
+  .logo span { color: var(--muted); font-size: 13px; font-family: system-ui, sans-serif; margin-left: 8px; }
+
+  .steps { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--surface); padding: 0 32px; }
+  .step { padding: 12px 20px; font-size: 13px; color: var(--muted); border-bottom: 2px solid transparent; cursor: default; }
+  .step.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  .step.done { color: var(--green); }
+
+  main { max-width: 860px; margin: 40px auto; padding: 0 24px 80px; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  h2 { font-family: Georgia, serif; font-size: 22px; font-weight: normal; margin-bottom: 6px; }
+  .sub { color: var(--muted); font-size: 13.5px; margin-bottom: 28px; }
+
+  /* Upload zone */
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    background: var(--surface);
+  }
+  .drop-zone.over { border-color: var(--accent); background: var(--accent-light); }
+  .drop-zone-icon { font-size: 36px; margin-bottom: 12px; }
+  .drop-zone p { color: var(--muted); font-size: 14px; }
+  .drop-zone strong { color: var(--accent); }
+  #file-input { display: none; }
+
+  .file-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .file-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13.5px;
+  }
+  .file-chip .name { font-weight: 500; }
+  .file-chip .status { color: var(--muted); font-size: 12px; }
+  .file-chip .status.ok { color: var(--green); }
+  .file-chip .status.err { color: var(--red); }
+
+  /* Form fields */
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .field-grid { grid-template-columns: 1fr; } }
+
+  .field-group { display: flex; flex-direction: column; gap: 5px; }
+  .field-group.full { grid-column: 1 / -1; }
+  label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  input[type=text], textarea {
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 9px 12px;
+    font-size: 14.5px;
+    font-family: inherit;
+    background: var(--surface);
+    color: var(--text);
+    width: 100%;
+    transition: border-color 0.15s;
+  }
+  input[type=text]:focus, textarea:focus { outline: none; border-color: var(--accent); }
+  input.flagged { border-color: var(--amber); background: var(--amber-bg); }
+  textarea { resize: vertical; min-height: 100px; }
+
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 22px 24px;
+    margin-bottom: 20px;
+  }
+  .section-card h3 { font-family: Georgia, serif; font-size: 15px; font-weight: normal; margin-bottom: 16px; color: var(--text); }
+
+  /* Team table */
+  .team-table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 12px; }
+  .team-table th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 0 8px 8px 0; border-bottom: 1px solid var(--border); }
+  .team-table td { padding: 6px 8px 6px 0; border-bottom: 1px solid var(--border); }
+  .team-table td input { border: none; border-bottom: 1px solid var(--border); border-radius: 0; padding: 4px 6px; font-size: 13px; width: 100%; background: transparent; }
+  .team-table td input:focus { outline: none; border-bottom-color: var(--accent); background: var(--accent-light); }
+  .team-table tr:last-child td { border-bottom: none; }
+  .remove-row { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 0 4px; }
+  .remove-row:hover { color: var(--red); }
+
+  /* Buttons */
+  .btn {
+    padding: 10px 22px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.88; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-secondary { background: var(--surface); color: var(--accent); border: 1px solid var(--accent); }
+  .btn-small { padding: 6px 14px; font-size: 13px; }
+  .btn-row { display: flex; gap: 12px; margin-top: 28px; }
+
+  /* Flag badge */
+  .flag { display: inline-block; font-size: 11px; font-weight: 600; background: var(--amber-bg); color: var(--amber); border-radius: 3px; padding: 2px 7px; margin-left: 8px; }
+
+  /* Download panel */
+  .success-box { background: var(--green-bg); border: 1px solid #A8D5BB; border-radius: 8px; padding: 32px; text-align: center; }
+  .success-box .icon { font-size: 40px; margin-bottom: 12px; }
+  .success-box h3 { font-family: Georgia, serif; font-size: 20px; font-weight: normal; color: var(--green); margin-bottom: 8px; }
+  .success-box p { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+
+  /* Spinner */
+  .spinner { display: none; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">H2M <span>Project Plan Generator</span></div>
+</header>
+
+<div class="steps">
+  <div class="step active" id="step-tab-1">1 · Upload Documents</div>
+  <div class="step" id="step-tab-2">2 · Review & Edit</div>
+  <div class="step" id="step-tab-3">3 · Download</div>
+</div>
+
+<main>
+
+  <!-- STEP 1: Upload -->
+  <div class="panel active" id="panel-1">
+    <h2>Upload Project Documents</h2>
+    <p class="sub">Drag in your source documents — RFP, technical proposal, WBS, org chart, project schedule. The tool will extract what it can and flag anything it couldn't find.</p>
+
+    <div class="drop-zone" id="drop-zone">
+      <div class="drop-zone-icon">📂</div>
+      <p><strong>Drag files here</strong> or click to browse</p>
+      <p style="margin-top:6px; font-size:12px;">PDF, Word, Excel, PowerPoint accepted</p>
+      <input type="file" id="file-input" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.pptx,.ppt">
+    </div>
+
+    <div class="file-list" id="file-list"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-upload" disabled>Process Documents →</button>
+      <button class="btn btn-secondary" id="btn-skip">Skip — fill manually</button>
+    </div>
+    <div class="spinner" id="spinner-1" style="margin-top:16px;"></div>
+  </div>
+
+  <!-- STEP 2: Review & Edit -->
+  <div class="panel" id="panel-2">
+    <h2>Review & Edit</h2>
+    <p class="sub">Fields the AI filled are shown below. <span style="background:var(--amber-bg);color:var(--amber);padding:1px 6px;border-radius:3px;font-size:12px;font-weight:600;">Flagged</span> fields couldn't be found — fill them in manually.</p>
+
+    <!-- Section I -->
+    <div class="section-card">
+      <h3>I. General Project Information</h3>
+      <div class="field-grid">
+        <div class="field-group">
+          <label>Project Name</label>
+          <input type="text" id="f-project-name" placeholder="e.g. Riverside Fire Station No. 3">
+        </div>
+        <div class="field-group">
+          <label>Client Company Name</label>
+          <input type="text" id="f-client-company" placeholder="e.g. Town of Riverside">
+        </div>
+        <div class="field-group">
+          <label>H2M Project Contact</label>
+          <input type="text" id="f-project-contact" placeholder="Name, Title">
+        </div>
+        <div class="field-group">
+          <label>Client Contact</label>
+          <input type="text" id="f-client-contact" placeholder="Name, Title">
+        </div>
+        <div class="field-group">
+          <label>Project Location</label>
+          <input type="text" id="f-project-location" placeholder="Street address">
+        </div>
+        <div class="field-group">
+          <label>Client Address</label>
+          <input type="text" id="f-client-location" placeholder="Street address">
+        </div>
+        <div class="field-group">
+          <label>H2M Phone</label>
+          <input type="text" id="f-project-phone" placeholder="(000) 000-0000">
+        </div>
+        <div class="field-group">
+          <label>Client Phone</label>
+          <input type="text" id="f-client-phone" placeholder="(000) 000-0000">
+        </div>
+        <div class="field-group">
+          <label>H2M Fax</label>
+          <input type="text" id="f-project-fax" placeholder="(000) 000-0000">
+        </div>
+        <div class="field-group">
+          <label>Client Fax</label>
+          <input type="text" id="f-client-fax" placeholder="(000) 000-0000">
+        </div>
+        <div class="field-group">
+          <label>H2M Email</label>
+          <input type="text" id="f-project-email" placeholder="name@h2m.com">
+        </div>
+        <div class="field-group">
+          <label>Client Email</label>
+          <input type="text" id="f-client-email" placeholder="name@client.com">
+        </div>
+      </div>
+    </div>
+
+    <!-- Project Team -->
+    <div class="section-card">
+      <h3>II. Project Team</h3>
+      <div style="overflow-x:auto;">
+        <table class="team-table" id="team-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Organization</th>
+              <th>Role</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="team-body"></tbody>
+        </table>
+      </div>
+      <button class="btn btn-secondary btn-small" onclick="addTeamRow()">+ Add Person</button>
+    </div>
+
+    <!-- Scope -->
+    <div class="section-card">
+      <h3>VI. Scope of Work & Services</h3>
+      <div class="field-group" style="margin-bottom:16px;">
+        <label>Scope of Work</label>
+        <textarea id="f-scope-work" placeholder="Describe the work that will take place to achieve the client's goals..."></textarea>
+      </div>
+      <div class="field-group">
+        <label>Scope of Services</label>
+        <textarea id="f-scope-services" placeholder="Describe in detail the services H2M will be providing..."></textarea>
+      </div>
+    </div>
+
+    <!-- Milestones -->
+    <div class="section-card">
+      <h3>VIII. Project Milestones</h3>
+      <div style="overflow-x:auto;">
+        <table class="team-table" id="milestone-table">
+          <thead>
+            <tr><th style="width:70%">Milestone Description</th><th>Date</th><th></th></tr>
+          </thead>
+          <tbody id="milestone-body"></tbody>
+        </table>
+      </div>
+      <button class="btn btn-secondary btn-small" onclick="addMilestoneRow()">+ Add Milestone</button>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-generate">Generate Project Plan →</button>
+      <button class="btn btn-secondary" onclick="goTo(1)">← Back</button>
+    </div>
+    <div class="spinner" id="spinner-2" style="margin-top:16px;"></div>
+  </div>
+
+  <!-- STEP 3: Download -->
+  <div class="panel" id="panel-3">
+    <div class="success-box">
+      <div class="icon">✅</div>
+      <h3>Your Project Plan is Ready</h3>
+      <p>The Word document has been generated and is ready to download. Open it in Word to make any final edits, then save it to the project's Project Plan folder.</p>
+      <a id="download-link" href="#" class="btn btn-primary" style="display:inline-block; text-decoration:none;">Download Project Plan.docx</a>
+    </div>
+    <div class="btn-row" style="justify-content:center; margin-top:20px;">
+      <button class="btn btn-secondary" onclick="startOver()">Start a New Plan</button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+let sessionId = null;
+
+// ── Drop zone ──
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const fileList = document.getElementById('file-list');
+const btnUpload = document.getElementById('btn-upload');
+let selectedFiles = [];
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('over');
+  addFiles([...e.dataTransfer.files]);
+});
+fileInput.addEventListener('change', () => addFiles([...fileInput.files]));
+
+function addFiles(files) {
+  selectedFiles = [...selectedFiles, ...files];
+  renderFileList();
+  btnUpload.disabled = selectedFiles.length === 0;
+}
+
+function renderFileList() {
+  fileList.innerHTML = selectedFiles.map((f, i) => `
+    <div class="file-chip">
+      <span class="name">${f.name}</span>
+      <span class="status">${(f.size / 1024).toFixed(0)} KB</span>
+    </div>`).join('');
+}
+
+// ── Upload ──
+document.getElementById('btn-upload').addEventListener('click', uploadFiles);
+
+async function uploadFiles() {
+  const spinner = document.getElementById('spinner-1');
+  spinner.style.display = 'block';
+  btnUpload.disabled = true;
+
+  const form = new FormData();
+  selectedFiles.forEach(f => form.append('files', f));
+
+  try {
+    const res = await fetch('/upload', { method: 'POST', body: form });
+    const data = await res.json();
+    sessionId = data.session_id;
+    populateFields(data.fields);
+    goTo(2);
+  } catch (e) {
+    alert('Upload failed: ' + e.message);
+  } finally {
+    spinner.style.display = 'none';
+    btnUpload.disabled = false;
+  }
+}
+
+document.getElementById('btn-skip').addEventListener('click', () => {
+  sessionId = crypto.randomUUID();
+  populateFields({});
+  goTo(2);
+});
+
+function populateFields(fields) {
+  const map = {
+    'Project Name': 'f-project-name',
+    'Project Contact': 'f-project-contact',
+    'Project Location': 'f-project-location',
+    'Project Phone': 'f-project-phone',
+    'Project Fax': 'f-project-fax',
+    'Project E-Mail': 'f-project-email',
+    'Client Company': 'f-client-company',
+    'Client Contact': 'f-client-contact',
+    'Client Location': 'f-client-location',
+    'Client Phone': 'f-client-phone',
+    'Client Fax': 'f-client-fax',
+    'Client E-Mail': 'f-client-email',
+  };
+  for (const [key, id] of Object.entries(map)) {
+    const el = document.getElementById(id);
+    const val = fields[key] || '';
+    el.value = val;
+    el.classList.toggle('flagged', !val);
+  }
+  // Default team row
+  if (document.getElementById('team-body').children.length === 0) addTeamRow();
+  // Default milestone rows
+  if (document.getElementById('milestone-body').children.length === 0) {
+    const defaults = [
+      'Internal Design Team Kick-off Meeting',
+      'External Client Kick-off Meeting',
+      'Submit DD for QA Review',
+      'DD Set to Owner & Estimator',
+      'Estimate Due',
+      'Submit CD for QA Review',
+      'Issue Bid Documents',
+      'Pre-Bid Walk Through',
+      'Bid Opening',
+      'Notice of Award',
+      'Construction Kick-off',
+      'Substantial Completion',
+    ];
+    defaults.forEach(d => addMilestoneRow(d));
+  }
+}
+
+// ── Team table ──
+function addTeamRow(name='', org='H2M', role='', email='', phone='') {
+  const tbody = document.getElementById('team-body');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" placeholder="Full name" value="${name}"></td>
+    <td><input type="text" placeholder="Organization" value="${org}"></td>
+    <td><input type="text" placeholder="Role/Title" value="${role}"></td>
+    <td><input type="text" placeholder="email@h2m.com" value="${email}"></td>
+    <td><input type="text" placeholder="(000) 000-0000" value="${phone}"></td>
+    <td><button class="remove-row" onclick="this.closest('tr').remove()">×</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function getTeam() {
+  return [...document.querySelectorAll('#team-body tr')].map(tr => {
+    const inputs = tr.querySelectorAll('input');
+    return { name: inputs[0].value, organization: inputs[1].value, role: inputs[2].value, email: inputs[3].value, phone: inputs[4].value };
+  }).filter(m => m.name);
+}
+
+// ── Milestone table ──
+function addMilestoneRow(description='', date='') {
+  const tbody = document.getElementById('milestone-body');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" placeholder="Milestone description" value="${description}" style="width:100%"></td>
+    <td><input type="text" placeholder="YYYY-MM-DD or TBD" value="${date}" style="width:130px"></td>
+    <td><button class="remove-row" onclick="this.closest('tr').remove()">×</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function getMilestones() {
+  return [...document.querySelectorAll('#milestone-body tr')].map(tr => {
+    const inputs = tr.querySelectorAll('input');
+    return { description: inputs[0].value, date: inputs[1].value };
+  }).filter(m => m.description);
+}
+
+// ── Generate ──
+document.getElementById('btn-generate').addEventListener('click', generatePlan);
+
+async function generatePlan() {
+  const spinner = document.getElementById('spinner-2');
+  spinner.style.display = 'block';
+  document.getElementById('btn-generate').disabled = true;
+
+  const payload = {
+    session_id: sessionId,
+    fields: {
+      'Project Name': document.getElementById('f-project-name').value,
+      'Project Contact': document.getElementById('f-project-contact').value,
+      'Project Location': document.getElementById('f-project-location').value,
+      'Project Phone': document.getElementById('f-project-phone').value,
+      'Project Fax': document.getElementById('f-project-fax').value,
+      'Project E-Mail': document.getElementById('f-project-email').value,
+      'Client Company': document.getElementById('f-client-company').value,
+      'Client Contact': document.getElementById('f-client-contact').value,
+      'Client Location': document.getElementById('f-client-location').value,
+      'Client Phone': document.getElementById('f-client-phone').value,
+      'Client Fax': document.getElementById('f-client-fax').value,
+      'Client E-Mail': document.getElementById('f-client-email').value,
+    },
+    team: getTeam(),
+    milestones: getMilestones(),
+    scope_of_work: document.getElementById('f-scope-work').value,
+    scope_of_services: document.getElementById('f-scope-services').value,
+  };
+
+  try {
+    const res = await fetch('/generate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const data = await res.json();
+    document.getElementById('download-link').href = `/download/${data.download_id}`;
+    goTo(3);
+  } catch (e) {
+    alert('Generation failed: ' + e.message);
+  } finally {
+    spinner.style.display = 'none';
+    document.getElementById('btn-generate').disabled = false;
+  }
+}
+
+// ── Navigation ──
+function goTo(n) {
+  document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', i + 1 === n));
+  document.querySelectorAll('.step').forEach((s, i) => {
+    s.classList.toggle('active', i + 1 === n);
+    s.classList.toggle('done', i + 1 < n);
+  });
+}
+
+function startOver() {
+  sessionId = null;
+  selectedFiles = [];
+  fileList.innerHTML = '';
+  btnUpload.disabled = true;
+  document.getElementById('team-body').innerHTML = '';
+  document.getElementById('milestone-body').innerHTML = '';
+  goTo(1);
+}
+</script>
+</body>
+</html>
