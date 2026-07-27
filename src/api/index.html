@@ -36,322 +36,547 @@
     display: flex;
     align-items: center;
     gap: 14px;
+    position: sticky; top: 0; z-index: 20;
   }
-  /* H2M tile mark */
-  .mark {
-    display: grid;
-    grid-template-columns: repeat(2, 17px);
-    grid-template-rows: repeat(2, 17px);
-    gap: 2px;
-    flex-shrink: 0;
-  }
-  .mark i {
-    display: block;
-    color: #fff;
-    font-style: normal;
-    font-weight: 600;
-    font-size: 12px;
-    line-height: 17px;
-    text-align: center;
-    font-family: system-ui, sans-serif;
-  }
+  .mark { display: grid; grid-template-columns: repeat(2, 17px); grid-template-rows: repeat(2, 17px); gap: 2px; flex-shrink: 0; }
+  .mark i { display: block; color: #fff; font-style: normal; font-weight: 600; font-size: 12px; line-height: 17px; text-align: center; }
   .mark .t-h { background: var(--h2m-green); }
   .mark .t-2 { background: var(--h2m-gray); }
   .mark .t-blank { background: transparent; }
   .mark .t-m { background: var(--h2m-blue); }
+  .logo { font-family: Georgia, serif; font-size: 19px; color: var(--h2m-gray); line-height: 1.2; }
+  .logo span { display: block; color: var(--muted); font-size: 12px; font-family: system-ui, sans-serif; }
+  .save-state { margin-left: auto; font-size: 12px; color: var(--muted); }
 
-  .logo { font-family: Georgia, serif; font-size: 19px; color: var(--h2m-gray); font-weight: normal; line-height: 1.2; }
-  .logo span { display: block; color: var(--muted); font-size: 12px; font-family: system-ui, sans-serif; letter-spacing: 0.02em; }
-
-  .steps { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--surface); padding: 0 32px; }
-  .step { padding: 12px 20px; font-size: 13px; color: var(--muted); border-bottom: 2px solid transparent; cursor: default; }
+  .steps { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); padding: 0 32px; position: sticky; top: 62px; z-index: 19; }
+  .step { padding: 12px 20px; font-size: 13px; color: var(--muted); border-bottom: 2px solid transparent; }
   .step.active { color: var(--h2m-blue-dark); border-bottom-color: var(--h2m-blue); font-weight: 600; }
   .step.done { color: var(--h2m-green-dark); border-bottom-color: var(--h2m-green); }
 
-  main { max-width: 860px; margin: 40px auto; padding: 0 24px 80px; }
-
+  main { max-width: 940px; margin: 36px auto; padding: 0 24px 80px; }
   .panel { display: none; }
   .panel.active { display: block; }
 
   h2 { font-family: Georgia, serif; font-size: 22px; font-weight: normal; margin-bottom: 6px; }
-  .sub { color: var(--muted); font-size: 13.5px; margin-bottom: 28px; }
+  .sub { color: var(--muted); font-size: 13.5px; margin-bottom: 26px; }
 
-  /* Upload zone */
-  .drop-zone {
-    border: 2px dashed var(--border);
-    border-radius: 8px;
-    padding: 48px 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
-    background: var(--surface);
-  }
-  .drop-zone.over { border-color: var(--accent); background: var(--accent-light); }
-  .drop-zone-icon { font-size: 36px; margin-bottom: 12px; }
+  /* Upload */
+  .drop-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 48px 24px; text-align: center; cursor: pointer; background: var(--surface); transition: border-color .15s, background .15s; }
+  .drop-zone.over { border-color: var(--h2m-blue); background: var(--accent-light); }
+  .drop-zone-icon { font-size: 34px; margin-bottom: 10px; }
   .drop-zone p { color: var(--muted); font-size: 14px; }
-  .drop-zone strong { color: var(--accent); }
+  .drop-zone strong { color: var(--h2m-blue-dark); }
   #file-input { display: none; }
-
   .file-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
-  .file-chip {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 13.5px;
-  }
-  .file-chip .name { font-weight: 500; }
+  .file-chip { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--h2m-blue); border-radius: 5px; padding: 10px 14px; display: flex; justify-content: space-between; font-size: 13.5px; }
   .file-chip .status { color: var(--muted); font-size: 12px; }
-  .file-chip .status.ok { color: var(--green); }
-  .file-chip .status.err { color: var(--red); }
 
-  /* Form fields */
-  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 600px) { .field-grid { grid-template-columns: 1fr; } }
+  /* Sections */
+  .section-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 14px; overflow: hidden; }
+  .section-card > summary, .section-card > .card-head {
+    padding: 14px 20px; cursor: pointer; list-style: none;
+    display: flex; align-items: center; gap: 10px;
+    border-left: 3px solid var(--h2m-blue); background: var(--surface);
+    font-family: Georgia, serif; font-size: 15px;
+  }
+  .section-card > summary::-webkit-details-marker { display: none; }
+  .section-card > summary::before { content: "▸"; color: var(--muted); font-size: 11px; transition: transform .15s; font-family: system-ui; }
+  .section-card[open] > summary::before { transform: rotate(90deg); }
+  .section-card > summary:hover { background: var(--accent-light); }
+  .roman { color: var(--h2m-blue-dark); font-weight: 600; font-family: system-ui; font-size: 12px; letter-spacing: .04em; min-width: 34px; }
+  .card-body { padding: 6px 20px 20px; border-top: 1px solid var(--border); }
+  .hint { font-size: 12.5px; color: var(--muted); margin: 10px 0 14px; }
 
+  /* Fields */
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .field-grid { grid-template-columns: 1fr; } }
   .field-group { display: flex; flex-direction: column; gap: 5px; }
   .field-group.full { grid-column: 1 / -1; }
-  label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  label { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
   input[type=text], textarea {
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 9px 12px;
-    font-size: 14.5px;
-    font-family: inherit;
-    background: var(--surface);
-    color: var(--text);
-    width: 100%;
-    transition: border-color 0.15s;
+    border: 1px solid var(--border); border-radius: 5px; padding: 9px 12px;
+    font-size: 14.5px; font-family: inherit; background: var(--surface); color: var(--text); width: 100%;
   }
-  input[type=text]:focus, textarea:focus { outline: none; border-color: var(--accent); }
+  input[type=text]:focus, textarea:focus { outline: none; border-color: var(--h2m-blue); box-shadow: 0 0 0 3px rgba(103,144,177,.15); }
   input.flagged { border-color: var(--amber); background: var(--amber-bg); }
-  textarea { resize: vertical; min-height: 100px; }
+  textarea { resize: vertical; min-height: 96px; line-height: 1.55; }
 
-  .section-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    border-radius: 6px;
-    padding: 22px 24px;
-    margin-bottom: 20px;
-  }
-  .section-card h3 { font-family: Georgia, serif; font-size: 15px; font-weight: normal; margin-bottom: 16px; color: var(--text); }
-
-  /* Team table */
-  .team-table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 12px; }
-  .team-table th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 0 8px 8px 0; border-bottom: 1px solid var(--border); }
-  .team-table td { padding: 6px 8px 6px 0; border-bottom: 1px solid var(--border); }
-  .team-table td input { border: none; border-bottom: 1px solid var(--border); border-radius: 0; padding: 4px 6px; font-size: 13px; width: 100%; background: transparent; }
-  .team-table td input:focus { outline: none; border-bottom-color: var(--accent); background: var(--accent-light); }
-  .team-table tr:last-child td { border-bottom: none; }
-  .remove-row { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 0 4px; }
+  /* Repeatable tables */
+  .rtable { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 6px; }
+  .rtable th { text-align: left; font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #fff; background: var(--h2m-blue); padding: 6px 8px; }
+  .rtable th:first-child { border-radius: 3px 0 0 3px; }
+  .rtable th:last-child { border-radius: 0 3px 3px 0; }
+  .rtable td { padding: 3px 4px 3px 0; border-bottom: 1px solid var(--border); }
+  .rtable td input { border: 1px solid transparent; border-radius: 3px; padding: 5px 7px; font-size: 13px; width: 100%; background: transparent; font-family: inherit; color: var(--text); }
+  .rtable td input:focus { outline: none; border-color: var(--h2m-blue); background: var(--surface); }
+  .rtable tr:last-child td { border-bottom: none; }
+  .remove-row { background: none; border: none; color: var(--border); cursor: pointer; font-size: 17px; line-height: 1; padding: 0 6px; }
   .remove-row:hover { color: var(--red); }
+  .tbl-scroll { overflow-x: auto; }
 
   /* Buttons */
-  .btn {
-    padding: 10px 22px;
-    border-radius: 5px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: opacity 0.15s;
-  }
-  .btn:hover { opacity: 0.88; }
-  .btn-primary { background: var(--accent); color: white; }
-  .btn-secondary { background: var(--surface); color: var(--accent); border: 1px solid var(--accent); }
-  .btn-small { padding: 6px 14px; font-size: 13px; }
-  .btn-row { display: flex; gap: 12px; margin-top: 28px; }
+  .btn { padding: 10px 22px; border-radius: 5px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
+  .btn:hover { opacity: .88; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-primary { background: var(--h2m-blue-dark); color: #fff; }
+  .btn-secondary { background: var(--surface); color: var(--h2m-blue-dark); border: 1px solid var(--h2m-blue); }
+  .btn-small { padding: 5px 13px; font-size: 12.5px; margin-top: 10px; }
+  .btn-row { display: flex; gap: 12px; margin-top: 26px; }
 
-  /* Flag badge */
-  .flag { display: inline-block; font-size: 11px; font-weight: 600; background: var(--amber-bg); color: var(--amber); border-radius: 3px; padding: 2px 7px; margin-left: 8px; }
-
-  /* Download panel */
   .success-box { background: var(--green-bg); border: 1px solid var(--h2m-green); border-left: 4px solid var(--h2m-green); border-radius: 8px; padding: 32px; text-align: center; }
-  .success-box .icon { font-size: 40px; margin-bottom: 12px; }
-  .success-box h3 { font-family: Georgia, serif; font-size: 20px; font-weight: normal; color: var(--green); margin-bottom: 8px; }
+  .success-box .icon { font-size: 38px; margin-bottom: 10px; }
+  .success-box h3 { font-family: Georgia, serif; font-size: 20px; font-weight: normal; color: var(--h2m-green-dark); margin-bottom: 8px; }
   .success-box p { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
 
-  /* Spinner */
-  .spinner { display: none; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto; }
+  .spinner { display: none; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--h2m-blue); border-radius: 50%; animation: spin .7s linear infinite; margin-top: 16px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="mark" aria-label="H2M">
-    <i class="t-h">H</i><i class="t-2">2</i><i class="t-blank"></i><i class="t-m">M</i>
-  </div>
+  <div class="mark" aria-label="H2M"><i class="t-h">H</i><i class="t-2">2</i><i class="t-blank"></i><i class="t-m">M</i></div>
   <div class="logo">Project Plan Generator<span>architects + engineers</span></div>
+  <div class="save-state" id="save-state"></div>
 </header>
 
 <div class="steps">
-  <div class="step active" id="step-tab-1">1 · Upload Documents</div>
-  <div class="step" id="step-tab-2">2 · Review & Edit</div>
-  <div class="step" id="step-tab-3">3 · Download</div>
+  <div class="step active">1 · Upload Documents</div>
+  <div class="step">2 · Review &amp; Edit</div>
+  <div class="step">3 · Download</div>
 </div>
 
 <main>
 
-  <!-- STEP 1: Upload -->
-  <div class="panel active" id="panel-1">
-    <h2>Upload Project Documents</h2>
-    <p class="sub">Drag in your source documents — RFP, technical proposal, WBS, org chart, project schedule. The tool will extract what it can and flag anything it couldn't find.</p>
-
-    <div class="drop-zone" id="drop-zone">
-      <div class="drop-zone-icon">📂</div>
-      <p><strong>Drag files here</strong> or click to browse</p>
-      <p style="margin-top:6px; font-size:12px;">PDF, Word, Excel, PowerPoint accepted</p>
-      <input type="file" id="file-input" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.pptx,.ppt">
-    </div>
-
-    <div class="file-list" id="file-list"></div>
-
-    <div class="btn-row">
-      <button class="btn btn-primary" id="btn-upload" disabled>Process Documents →</button>
-      <button class="btn btn-secondary" id="btn-skip">Skip — fill manually</button>
-    </div>
-    <div class="spinner" id="spinner-1" style="margin-top:16px;"></div>
+<!-- STEP 1 -->
+<div class="panel active" id="panel-1">
+  <h2>Upload Project Documents</h2>
+  <p class="sub">Drag in the RFP, technical proposal, fee &amp; work breakdown, org chart, and project schedule. Anything the tool can't find gets flagged for you to fill in.</p>
+  <div class="drop-zone" id="drop-zone">
+    <div class="drop-zone-icon">📂</div>
+    <p><strong>Drag files here</strong> or click to browse</p>
+    <p style="margin-top:6px;font-size:12px;">PDF, Word, Excel, PowerPoint</p>
+    <input type="file" id="file-input" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.pptx,.ppt">
   </div>
+  <div class="file-list" id="file-list"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn-upload" disabled>Process Documents →</button>
+    <button class="btn btn-secondary" id="btn-skip">Skip — fill manually</button>
+  </div>
+  <div class="spinner" id="spinner-1"></div>
+</div>
 
-  <!-- STEP 2: Review & Edit -->
-  <div class="panel" id="panel-2">
-    <h2>Review & Edit</h2>
-    <p class="sub">Fields the AI filled are shown below. <span style="background:var(--amber-bg);color:var(--amber);padding:1px 6px;border-radius:3px;font-size:12px;font-weight:600;">Flagged</span> fields couldn't be found — fill them in manually.</p>
+<!-- STEP 2 -->
+<div class="panel" id="panel-2">
+  <h2>Review &amp; Edit</h2>
+  <p class="sub">Every section of the project plan is below. <span style="background:var(--amber-bg);color:var(--amber);padding:1px 6px;border-radius:3px;font-size:12px;font-weight:600;">Flagged</span> fields need your input. Your work saves automatically.</p>
 
-    <!-- Section I -->
-    <div class="section-card">
-      <h3>I. General Project Information</h3>
+  <details class="section-card" open>
+    <summary><span class="roman">I</span> General Project Information</summary>
+    <div class="card-body">
+      <div class="field-grid" id="general-fields"></div>
+    </div>
+  </details>
+
+  <details class="section-card" open>
+    <summary><span class="roman">II</span> Project Team</summary>
+    <div class="card-body" data-table="team"></div>
+  </details>
+
+  <details class="section-card" open>
+    <summary><span class="roman">III</span> Overview — Purpose &amp; Success Factors</summary>
+    <div class="card-body">
+      <div class="field-group full">
+        <label>A. Statement of Purpose</label>
+        <textarea id="f-statement" placeholder="To provide the client with… (describe the services and the project scope at a high level)"></textarea>
+      </div>
+      <div class="hint">B. Critical Success Factors — what defines success, and how it will be measured.</div>
+      <div data-table="client_success"></div>
+      <div style="height:14px"></div>
+      <div data-table="h2m_success"></div>
+    </div>
+  </details>
+
+  <details class="section-card">
+    <summary><span class="roman">IV</span> Health &amp; Safety</summary>
+    <div class="card-body">
+      <div class="hint">Required by H2M's <em>Minimum Requirements of a Project Plan</em>, but absent from the current Word template — filling this in adds the section to the output and renumbers the rest.</div>
+      <div class="field-group full">
+        <label>A. Project Hazard Assessment</label>
+        <textarea id="f-hazard" placeholder="Identify project hazards and the controls in place. (H2M's Project Hazard Assessment Form is noted as forthcoming.)"></textarea>
+      </div>
+    </div>
+  </details>
+
+  <details class="section-card">
+    <summary><span class="roman">V</span> Project Deliverables</summary>
+    <div class="card-body">
+      <div class="hint">A. Meetings — prefilled with H2M's standard set. Adjust as needed.</div>
+      <div data-table="meetings"></div>
+      <div class="hint">B. Drawings</div>
+      <div data-table="drawings"></div>
+      <div class="hint">C. Specifications</div>
+      <div data-table="specifications"></div>
+      <div class="hint">D. Cost Opinions</div>
+      <div data-table="cost_opinions"></div>
+      <div class="hint">E. Reports</div>
+      <div data-table="reports"></div>
+    </div>
+  </details>
+
+  <details class="section-card">
+    <summary><span class="roman">VI</span> Work Breakdown Structure</summary>
+    <div class="card-body">
+      <div class="field-group full">
+        <label>Link to detailed WBS</label>
+        <input type="text" id="f-wbs-link" placeholder="Paste the SharePoint link to the WBS, or leave blank to fill in later">
+      </div>
+    </div>
+  </details>
+
+  <details class="section-card" open>
+    <summary><span class="roman">VII</span> Scope of Work &amp; Services</summary>
+    <div class="card-body">
+      <div class="field-group full" style="margin-bottom:14px;">
+        <label>A. Scope of Work</label>
+        <textarea id="f-scope-work" placeholder="Describe the work that will take place to achieve the client's goals…"></textarea>
+      </div>
+      <div class="field-group full">
+        <label>B. Scope of Services</label>
+        <textarea id="f-scope-services" placeholder="Describe in detail the services H2M will provide in support of the above…"></textarea>
+      </div>
+    </div>
+  </details>
+
+  <details class="section-card">
+    <summary><span class="roman">VIII</span> Project Financials</summary>
+    <div class="card-body">
       <div class="field-grid">
-        <div class="field-group">
-          <label>Project Name</label>
-          <input type="text" id="f-project-name" placeholder="e.g. Riverside Fire Station No. 3">
+        <div class="field-group full">
+          <label>A. Link to Project Set-up Form</label>
+          <input type="text" id="f-fee-link" placeholder="Paste link, or leave blank to fill in later">
         </div>
         <div class="field-group">
-          <label>Client Company Name</label>
-          <input type="text" id="f-client-company" placeholder="e.g. Town of Riverside">
+          <label>B. Invoice Frequency</label>
+          <input type="text" id="f-invoice-frequency" placeholder="Monthly">
         </div>
         <div class="field-group">
-          <label>H2M Project Contact</label>
-          <input type="text" id="f-project-contact" placeholder="Name, Title">
-        </div>
-        <div class="field-group">
-          <label>Client Contact</label>
-          <input type="text" id="f-client-contact" placeholder="Name, Title">
-        </div>
-        <div class="field-group">
-          <label>Project Location</label>
-          <input type="text" id="f-project-location" placeholder="Street address">
-        </div>
-        <div class="field-group">
-          <label>Client Address</label>
-          <input type="text" id="f-client-location" placeholder="Street address">
-        </div>
-        <div class="field-group">
-          <label>H2M Phone</label>
-          <input type="text" id="f-project-phone" placeholder="(000) 000-0000">
-        </div>
-        <div class="field-group">
-          <label>Client Phone</label>
-          <input type="text" id="f-client-phone" placeholder="(000) 000-0000">
-        </div>
-        <div class="field-group">
-          <label>H2M Fax</label>
-          <input type="text" id="f-project-fax" placeholder="(000) 000-0000">
-        </div>
-        <div class="field-group">
-          <label>Client Fax</label>
-          <input type="text" id="f-client-fax" placeholder="(000) 000-0000">
-        </div>
-        <div class="field-group">
-          <label>H2M Email</label>
-          <input type="text" id="f-project-email" placeholder="name@h2m.com">
-        </div>
-        <div class="field-group">
-          <label>Client Email</label>
-          <input type="text" id="f-client-email" placeholder="name@client.com">
+          <label>Send by Date</label>
+          <input type="text" id="f-invoice-date" placeholder="e.g. 15th of each month">
         </div>
       </div>
     </div>
+  </details>
 
-    <!-- Project Team -->
-    <div class="section-card">
-      <h3>II. Project Team</h3>
-      <div style="overflow-x:auto;">
-        <table class="team-table" id="team-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Organization</th>
-              <th>Role</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="team-body"></tbody>
-        </table>
+  <details class="section-card" open>
+    <summary><span class="roman">IX</span> Schedule &amp; Milestones</summary>
+    <div class="card-body">
+      <div class="field-group full" style="margin-bottom:6px;">
+        <label>A. Link to Detailed Project Schedule</label>
+        <input type="text" id="f-schedule-link" placeholder="Paste link, or leave blank to fill in later">
       </div>
-      <button class="btn btn-secondary btn-small" onclick="addTeamRow()">+ Add Person</button>
+      <div class="hint">B. Project Milestones — prefilled with H2M's standard sequence. Add dates, remove any that don't apply.</div>
+      <div data-table="milestones"></div>
+      <div class="hint">C. Progress Reports</div>
+      <div class="field-grid">
+        <div class="field-group"><label>Frequency</label><input type="text" id="f-progress-frequency" placeholder="Monthly"></div>
+        <div class="field-group"><label>Format</label><input type="text" id="f-progress-format" placeholder="PDF"></div>
+        <div class="field-group"><label>Delivery Method</label><input type="text" id="f-progress-delivery" placeholder="Email"></div>
+      </div>
     </div>
+  </details>
 
-    <!-- Scope -->
-    <div class="section-card">
-      <h3>VI. Scope of Work & Services</h3>
-      <div class="field-group" style="margin-bottom:16px;">
-        <label>Scope of Work</label>
-        <textarea id="f-scope-work" placeholder="Describe the work that will take place to achieve the client's goals..."></textarea>
-      </div>
-      <div class="field-group">
-        <label>Scope of Services</label>
-        <textarea id="f-scope-services" placeholder="Describe in detail the services H2M will be providing..."></textarea>
+  <details class="section-card">
+    <summary><span class="roman">X</span> BIM / CAD Requirements</summary>
+    <div class="card-body">
+      <div class="field-group full">
+        <label>Link to BIM Execution Plan</label>
+        <input type="text" id="f-bim-link" placeholder="Paste link, or leave blank to fill in later">
       </div>
     </div>
+  </details>
 
-    <!-- Milestones -->
-    <div class="section-card">
-      <h3>VIII. Project Milestones</h3>
-      <div style="overflow-x:auto;">
-        <table class="team-table" id="milestone-table">
-          <thead>
-            <tr><th style="width:70%">Milestone Description</th><th>Date</th><th></th></tr>
-          </thead>
-          <tbody id="milestone-body"></tbody>
-        </table>
+  <details class="section-card">
+    <summary><span class="roman">XI</span> QA and QC Plans</summary>
+    <div class="card-body">
+      <div class="field-group full">
+        <label>Key management participants and schedules for QA and QC</label>
+        <textarea id="f-qaqc" placeholder="Identify who owns QA and QC on this project and when reviews occur…"></textarea>
       </div>
-      <button class="btn btn-secondary btn-small" onclick="addMilestoneRow()">+ Add Milestone</button>
     </div>
+  </details>
 
-    <div class="btn-row">
-      <button class="btn btn-primary" id="btn-generate">Generate Project Plan →</button>
-      <button class="btn btn-secondary" onclick="goTo(1)">← Back</button>
+  <details class="section-card">
+    <summary><span class="roman">XII</span> Risk Management Plan</summary>
+    <div class="card-body">
+      <div class="hint">Priority rating is severity × probability. Enter probability as a percentage.</div>
+      <div data-table="risks"></div>
     </div>
-    <div class="spinner" id="spinner-2" style="margin-top:16px;"></div>
+  </details>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn-generate">Generate Project Plan →</button>
+    <button class="btn btn-secondary" onclick="goTo(1)">← Back</button>
   </div>
+  <div class="spinner" id="spinner-2"></div>
+</div>
 
-  <!-- STEP 3: Download -->
-  <div class="panel" id="panel-3">
-    <div class="success-box">
-      <div class="icon">✅</div>
-      <h3>Your Project Plan is Ready</h3>
-      <p>The Word document has been generated and is ready to download. Open it in Word to make any final edits, then save it to the project's Project Plan folder.</p>
-      <a id="download-link" href="#" class="btn btn-primary" style="display:inline-block; text-decoration:none;">Download Project Plan.docx</a>
-    </div>
-    <div class="btn-row" style="justify-content:center; margin-top:20px;">
-      <button class="btn btn-secondary" onclick="startOver()">Start a New Plan</button>
-    </div>
+<!-- STEP 3 -->
+<div class="panel" id="panel-3">
+  <div class="success-box">
+    <div class="icon">✅</div>
+    <h3>Your Project Plan is Ready</h3>
+    <p>Open it in Word for any final edits, then save it to the project's Project Plan folder.</p>
+    <a id="download-link" href="#" class="btn btn-primary" style="display:inline-block;text-decoration:none;">Download Project Plan.docx</a>
   </div>
+  <div class="btn-row" style="justify-content:center;">
+    <button class="btn btn-secondary" onclick="startOver()">Start a New Plan</button>
+  </div>
+</div>
 
 </main>
 
 <script>
-let sessionId = null;
+// ─────────────────────────────── config
 
-// ── Drop zone ──
+const GENERAL_FIELDS = [
+  ['Project Name', 'Riverside Fire Station No. 3'],
+  ['Client Company', 'Town of Riverside'],
+  ['Project Contact', 'Name, Title'],
+  ['Client Contact', 'Name, Title'],
+  ['Project Location', 'Street address'],
+  ['Client Location', 'Street address'],
+  ['Project Phone', '(000) 000-0000'],
+  ['Client Phone', '(000) 000-0000'],
+  ['Project Fax', '(000) 000-0000'],
+  ['Client Fax', '(000) 000-0000'],
+  ['Project E-Mail', 'name@h2m.com'],
+  ['Client E-Mail', 'name@client.com'],
+];
+
+const TABLES = {
+  team: {
+    cols: [['name','Full name'],['organization','Organization'],['role','Role / Title'],['email','email@h2m.com'],['phone','(000) 000-0000']],
+    headers: ['Name','Organization','Role','Email','Phone'],
+    defaults: [{organization:'H2M'}],
+    addLabel: '+ Add Person',
+  },
+  client_success: {
+    cols: [['factor',"Client's success factor"],['metric','Metric']],
+    headers: ["Client's Critical Success Factors", 'Performance Objectives'],
+    defaults: [{}, {}, {}],
+    addLabel: '+ Add Factor',
+  },
+  h2m_success: {
+    cols: [['factor',"H2M's success factor"],['metric','Metric']],
+    headers: ["H2M's Critical Success Factors", 'Performance Objectives'],
+    defaults: [
+      {factor:'Meets financial goals', metric:'Achieve at least a 3.1 direct labor multiplier'},
+      {factor:'Adhere to project schedule', metric:'Meet or exceed scheduled milestones'},
+      {factor:'Manage construction costs', metric:'Keep change orders under 2%'},
+    ],
+    addLabel: '+ Add Factor',
+  },
+  meetings: {
+    cols: [['type','Meeting type'],['frequency','Frequency'],['attendees','Attendees by title']],
+    headers: ['Type','Frequency','Anticipated Attendees (By Title)'],
+    defaults: [
+      {type:'Client kick-off', frequency:'SD', attendees:'CM, PM'},
+      {type:'Internal Design Team Kick-off Meeting', frequency:'Once', attendees:'CM, PM - Design Team'},
+      {type:'Internal Design Progress Meetings', frequency:'Bi-Weekly', attendees:'CM, PM - Design Team'},
+      {type:'External Client Kick-off Meeting', frequency:'Once', attendees:'CM, PM - Design Team as deemed appropriate'},
+      {type:'External Client Touchbase', frequency:'Bi-Weekly', attendees:'CM, PM - Design Team as deemed appropriate'},
+      {type:'Pre-bid walk-through', frequency:'Once', attendees:'CM, PM'},
+      {type:'Bid opening', frequency:'Once', attendees:'CM, PM'},
+      {type:'Construction kick-off', frequency:'Once', attendees:'CM, PM'},
+      {type:'Construction progress', frequency:'Bi-Weekly', attendees:'CM, PM'},
+    ],
+    addLabel: '+ Add Meeting',
+  },
+  drawings: {
+    cols: [['discipline','Discipline'],['number','Dwg. #'],['title','Drawing title']],
+    headers: ['Discipline','Dwg. #','Dwg. Title'],
+    defaults: [{title:'Refer to Master Drawing List'}],
+    addLabel: '+ Add Drawing',
+  },
+  specifications: {
+    cols: [['section_no','Div. - Section No.'],['name','Specification section name']],
+    headers: ['Div. - Section No.','Specifications Section Name'],
+    defaults: [{name:'Refer to Master Specification List'}],
+    addLabel: '+ Add Specification',
+  },
+  cost_opinions: {
+    cols: [['milestone','Milestone'],['title','Type / Title'],['comments','Link / Comments']],
+    headers: ['Milestone','Type / Title','Link / Comments'],
+    defaults: [
+      {milestone:'D.D. Phase', title:'Preliminary Cost Opinion', comments:'By CM'},
+      {milestone:'C.D. Phase', title:'Final Cost Opinion', comments:'By CM'},
+    ],
+    addLabel: '+ Add Cost Opinion',
+  },
+  reports: {
+    cols: [['milestone','Milestone'],['title','Type / Title'],['comments','Link / Comments']],
+    headers: ['Milestone','Type / Title','Link / Comments'],
+    defaults: [{}],
+    addLabel: '+ Add Report',
+  },
+  milestones: {
+    cols: [['description','Milestone description'],['date','YYYY-MM-DD or TBD']],
+    headers: ['Milestone Description','Date'],
+    widths: ['auto','150px'],
+    defaults: [
+      'Internal Design Team Kick-off Meeting','External Client Kick-off Meeting',
+      'Submit DD for QA Review','DD Set to Owner & Estimator','Estimate Due',
+      'Internal Estimate Review','External DD Estimate Review / CD Phase Kick-off',
+      'Submit CD for QA Review','Print BID / CD Set','Issue Bid Documents',
+      'Pre-Bid Walk Through','Bid Opening','Notice of Award',
+      'Negotiations & Contracts Complete','Construction Kick-off','Substantial Completion',
+    ].map(d => ({description: d})),
+    addLabel: '+ Add Milestone',
+  },
+  risks: {
+    cols: [['factor','Risk factor'],['impact','Potential impact'],['severity','1-10'],['probability','%'],['mitigation','Mitigation measures'],['by_whom','Initials'],['by_when','Date']],
+    headers: ['Risk Factor','Potential Impact to CFSs','Sev.','Prob.','Mitigation Measures','By Whom','By When'],
+    widths: ['22%','22%','60px','60px','auto','80px','100px'],
+    defaults: [{}, {}],
+    addLabel: '+ Add Risk',
+  },
+};
+
+// ─────────────────────────────── table factory
+
+function buildTable(key) {
+  const cfg = TABLES[key];
+  const host = document.querySelector(`[data-table="${key}"]`);
+  if (!host) return;
+  host.innerHTML = `
+    <div class="tbl-scroll">
+      <table class="rtable">
+        <thead><tr>
+          ${cfg.headers.map((h, i) => `<th${cfg.widths ? ` style="width:${cfg.widths[i]}"` : ''}>${h}</th>`).join('')}
+          <th style="width:28px"></th>
+        </tr></thead>
+        <tbody id="tb-${key}"></tbody>
+      </table>
+    </div>
+    <button class="btn btn-secondary btn-small" data-add="${key}">${cfg.addLabel}</button>`;
+  host.querySelector(`[data-add="${key}"]`).addEventListener('click', () => addRow(key));
+}
+
+function addRow(key, values = {}) {
+  const cfg = TABLES[key];
+  const tbody = document.getElementById(`tb-${key}`);
+  const tr = document.createElement('tr');
+  tr.innerHTML = cfg.cols.map(([k, ph]) =>
+    `<td><input type="text" data-k="${k}" placeholder="${ph}" value="${(values[k] ?? '').replace(/"/g, '&quot;')}"></td>`
+  ).join('') + `<td><button class="remove-row" title="Remove">×</button></td>`;
+  tr.querySelector('.remove-row').addEventListener('click', () => { tr.remove(); scheduleSave(); });
+  tr.querySelectorAll('input').forEach(i => i.addEventListener('input', scheduleSave));
+  tbody.appendChild(tr);
+}
+
+function readTable(key) {
+  const cfg = TABLES[key];
+  return [...document.querySelectorAll(`#tb-${key} tr`)].map(tr => {
+    const o = {};
+    tr.querySelectorAll('input').forEach(i => o[i.dataset.k] = i.value.trim());
+    return o;
+  }).filter(o => cfg.cols.some(([k]) => o[k]));
+}
+
+function setTable(key, rows) {
+  const tbody = document.getElementById(`tb-${key}`);
+  tbody.innerHTML = '';
+  (rows && rows.length ? rows : TABLES[key].defaults).forEach(r => addRow(key, r));
+}
+
+// ─────────────────────────────── general fields
+
+const SCALARS = {
+  'f-statement': 'statement_of_purpose',
+  'f-hazard': 'hazard_assessment',
+  'f-scope-work': 'scope_of_work',
+  'f-scope-services': 'scope_of_services',
+  'f-qaqc': 'qa_qc_plan',
+  'f-wbs-link': 'wbs_link',
+  'f-schedule-link': 'schedule_link',
+  'f-bim-link': 'bim_link',
+  'f-fee-link': 'fee_link',
+  'f-invoice-frequency': 'invoice_frequency',
+  'f-invoice-date': 'invoice_date',
+  'f-progress-frequency': 'progress_frequency',
+  'f-progress-format': 'progress_format',
+  'f-progress-delivery': 'progress_delivery',
+};
+
+function fieldId(alias) { return 'gf-' + alias.toLowerCase().replace(/[^a-z]+/g, '-'); }
+
+function buildGeneralFields() {
+  document.getElementById('general-fields').innerHTML = GENERAL_FIELDS.map(([alias, ph]) =>
+    `<div class="field-group">
+       <label>${alias}</label>
+       <input type="text" id="${fieldId(alias)}" data-alias="${alias}" placeholder="${ph}">
+     </div>`).join('');
+}
+
+// ─────────────────────────────── state
+
+const STORAGE_KEY = 'h2m-project-plan-draft';
+let sessionId = null;
+let saveTimer = null;
+
+function collect() {
+  const fields = {};
+  document.querySelectorAll('#general-fields input').forEach(i => fields[i.dataset.alias] = i.value.trim());
+  const data = { session_id: sessionId, fields };
+  for (const [id, key] of Object.entries(SCALARS)) data[key] = document.getElementById(id).value.trim();
+  for (const key of Object.keys(TABLES)) data[key] = readTable(key);
+  return data;
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(save, 400);
+}
+
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(collect()));
+    const el = document.getElementById('save-state');
+    el.textContent = 'Saved ' + new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  } catch (e) { /* storage full or blocked — keep working */ }
+}
+
+function restore() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (e) {}
+  if (!saved) return false;
+  sessionId = saved.session_id;
+  applyFields(saved.fields || {});
+  for (const [id, key] of Object.entries(SCALARS)) document.getElementById(id).value = saved[key] || '';
+  for (const key of Object.keys(TABLES)) setTable(key, saved[key]);
+  return true;
+}
+
+function applyFields(fields) {
+  document.querySelectorAll('#general-fields input').forEach(i => {
+    const v = fields[i.dataset.alias] || '';
+    i.value = v;
+    i.classList.toggle('flagged', !v);
+  });
+}
+
+function initBlank() {
+  applyFields({});
+  Object.keys(TABLES).forEach(k => setTable(k, null));
+  document.getElementById('f-invoice-frequency').value = 'Monthly';
+  document.getElementById('f-progress-frequency').value = 'Monthly';
+  document.getElementById('f-progress-format').value = 'PDF';
+  document.getElementById('f-progress-delivery').value = 'Email';
+}
+
+// ─────────────────────────────── upload
+
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file-input');
 const fileList = document.getElementById('file-list');
@@ -361,43 +586,28 @@ let selectedFiles = [];
 dropZone.addEventListener('click', () => fileInput.click());
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('over');
-  addFiles([...e.dataTransfer.files]);
-});
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('over'); addFiles([...e.dataTransfer.files]); });
 fileInput.addEventListener('change', () => addFiles([...fileInput.files]));
 
 function addFiles(files) {
   selectedFiles = [...selectedFiles, ...files];
-  renderFileList();
-  btnUpload.disabled = selectedFiles.length === 0;
+  fileList.innerHTML = selectedFiles.map(f =>
+    `<div class="file-chip"><span>${f.name}</span><span class="status">${(f.size/1024).toFixed(0)} KB</span></div>`).join('');
+  btnUpload.disabled = !selectedFiles.length;
 }
 
-function renderFileList() {
-  fileList.innerHTML = selectedFiles.map((f, i) => `
-    <div class="file-chip">
-      <span class="name">${f.name}</span>
-      <span class="status">${(f.size / 1024).toFixed(0)} KB</span>
-    </div>`).join('');
-}
-
-// ── Upload ──
-document.getElementById('btn-upload').addEventListener('click', uploadFiles);
-
-async function uploadFiles() {
+btnUpload.addEventListener('click', async () => {
   const spinner = document.getElementById('spinner-1');
   spinner.style.display = 'block';
   btnUpload.disabled = true;
-
   const form = new FormData();
   selectedFiles.forEach(f => form.append('files', f));
-
   try {
     const res = await fetch('/upload', { method: 'POST', body: form });
     const data = await res.json();
     sessionId = data.session_id;
-    populateFields(data.fields);
+    applyFields(data.fields || {});
+    save();
     goTo(2);
   } catch (e) {
     alert('Upload failed: ' + e.message);
@@ -405,128 +615,28 @@ async function uploadFiles() {
     spinner.style.display = 'none';
     btnUpload.disabled = false;
   }
-}
+});
 
 document.getElementById('btn-skip').addEventListener('click', () => {
-  sessionId = crypto.randomUUID();
-  populateFields({});
+  sessionId = sessionId || crypto.randomUUID();
+  save();
   goTo(2);
 });
 
-function populateFields(fields) {
-  const map = {
-    'Project Name': 'f-project-name',
-    'Project Contact': 'f-project-contact',
-    'Project Location': 'f-project-location',
-    'Project Phone': 'f-project-phone',
-    'Project Fax': 'f-project-fax',
-    'Project E-Mail': 'f-project-email',
-    'Client Company': 'f-client-company',
-    'Client Contact': 'f-client-contact',
-    'Client Location': 'f-client-location',
-    'Client Phone': 'f-client-phone',
-    'Client Fax': 'f-client-fax',
-    'Client E-Mail': 'f-client-email',
-  };
-  for (const [key, id] of Object.entries(map)) {
-    const el = document.getElementById(id);
-    const val = fields[key] || '';
-    el.value = val;
-    el.classList.toggle('flagged', !val);
-  }
-  // Default team row
-  if (document.getElementById('team-body').children.length === 0) addTeamRow();
-  // Default milestone rows
-  if (document.getElementById('milestone-body').children.length === 0) {
-    const defaults = [
-      'Internal Design Team Kick-off Meeting',
-      'External Client Kick-off Meeting',
-      'Submit DD for QA Review',
-      'DD Set to Owner & Estimator',
-      'Estimate Due',
-      'Submit CD for QA Review',
-      'Issue Bid Documents',
-      'Pre-Bid Walk Through',
-      'Bid Opening',
-      'Notice of Award',
-      'Construction Kick-off',
-      'Substantial Completion',
-    ];
-    defaults.forEach(d => addMilestoneRow(d));
-  }
-}
+// ─────────────────────────────── generate
 
-// ── Team table ──
-function addTeamRow(name='', org='H2M', role='', email='', phone='') {
-  const tbody = document.getElementById('team-body');
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td><input type="text" placeholder="Full name" value="${name}"></td>
-    <td><input type="text" placeholder="Organization" value="${org}"></td>
-    <td><input type="text" placeholder="Role/Title" value="${role}"></td>
-    <td><input type="text" placeholder="email@h2m.com" value="${email}"></td>
-    <td><input type="text" placeholder="(000) 000-0000" value="${phone}"></td>
-    <td><button class="remove-row" onclick="this.closest('tr').remove()">×</button></td>`;
-  tbody.appendChild(tr);
-}
-
-function getTeam() {
-  return [...document.querySelectorAll('#team-body tr')].map(tr => {
-    const inputs = tr.querySelectorAll('input');
-    return { name: inputs[0].value, organization: inputs[1].value, role: inputs[2].value, email: inputs[3].value, phone: inputs[4].value };
-  }).filter(m => m.name);
-}
-
-// ── Milestone table ──
-function addMilestoneRow(description='', date='') {
-  const tbody = document.getElementById('milestone-body');
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td><input type="text" placeholder="Milestone description" value="${description}" style="width:100%"></td>
-    <td><input type="text" placeholder="YYYY-MM-DD or TBD" value="${date}" style="width:130px"></td>
-    <td><button class="remove-row" onclick="this.closest('tr').remove()">×</button></td>`;
-  tbody.appendChild(tr);
-}
-
-function getMilestones() {
-  return [...document.querySelectorAll('#milestone-body tr')].map(tr => {
-    const inputs = tr.querySelectorAll('input');
-    return { description: inputs[0].value, date: inputs[1].value };
-  }).filter(m => m.description);
-}
-
-// ── Generate ──
-document.getElementById('btn-generate').addEventListener('click', generatePlan);
-
-async function generatePlan() {
+document.getElementById('btn-generate').addEventListener('click', async () => {
   const spinner = document.getElementById('spinner-2');
+  const btn = document.getElementById('btn-generate');
   spinner.style.display = 'block';
-  document.getElementById('btn-generate').disabled = true;
-
-  const payload = {
-    session_id: sessionId,
-    fields: {
-      'Project Name': document.getElementById('f-project-name').value,
-      'Project Contact': document.getElementById('f-project-contact').value,
-      'Project Location': document.getElementById('f-project-location').value,
-      'Project Phone': document.getElementById('f-project-phone').value,
-      'Project Fax': document.getElementById('f-project-fax').value,
-      'Project E-Mail': document.getElementById('f-project-email').value,
-      'Client Company': document.getElementById('f-client-company').value,
-      'Client Contact': document.getElementById('f-client-contact').value,
-      'Client Location': document.getElementById('f-client-location').value,
-      'Client Phone': document.getElementById('f-client-phone').value,
-      'Client Fax': document.getElementById('f-client-fax').value,
-      'Client E-Mail': document.getElementById('f-client-email').value,
-    },
-    team: getTeam(),
-    milestones: getMilestones(),
-    scope_of_work: document.getElementById('f-scope-work').value,
-    scope_of_services: document.getElementById('f-scope-services').value,
-  };
-
+  btn.disabled = true;
   try {
-    const res = await fetch('/generate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const payload = collect();
+    payload.session_id = sessionId = sessionId || crypto.randomUUID();
+    const res = await fetch('/generate', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('Server returned ' + res.status);
     const data = await res.json();
     document.getElementById('download-link').href = `/download/${data.download_id}`;
     goTo(3);
@@ -534,28 +644,40 @@ async function generatePlan() {
     alert('Generation failed: ' + e.message);
   } finally {
     spinner.style.display = 'none';
-    document.getElementById('btn-generate').disabled = false;
+    btn.disabled = false;
   }
-}
+});
 
-// ── Navigation ──
+// ─────────────────────────────── nav
+
 function goTo(n) {
   document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', i + 1 === n));
   document.querySelectorAll('.step').forEach((s, i) => {
     s.classList.toggle('active', i + 1 === n);
     s.classList.toggle('done', i + 1 < n);
   });
+  window.scrollTo({ top: 0 });
 }
 
 function startOver() {
+  if (!confirm('Clear this plan and start a new one? Your current work will be discarded.')) return;
+  localStorage.removeItem(STORAGE_KEY);
   sessionId = null;
   selectedFiles = [];
   fileList.innerHTML = '';
   btnUpload.disabled = true;
-  document.getElementById('team-body').innerHTML = '';
-  document.getElementById('milestone-body').innerHTML = '';
+  document.querySelectorAll('textarea, #panel-2 input[type=text]').forEach(i => i.value = '');
+  initBlank();
+  document.getElementById('save-state').textContent = '';
   goTo(1);
 }
+
+// ─────────────────────────────── boot
+
+buildGeneralFields();
+Object.keys(TABLES).forEach(buildTable);
+if (!restore()) initBlank();
+document.querySelectorAll('#panel-2 input, #panel-2 textarea').forEach(el => el.addEventListener('input', scheduleSave));
 </script>
 </body>
 </html>

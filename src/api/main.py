@@ -72,25 +72,28 @@ async def upload(files: list[UploadFile] = File(...)):
     return {"session_id": session_id, "fields": fields, "files": list(markdowns.keys())}
 
 
+BUILD_KEYS = (
+    "team", "client_success", "h2m_success", "meetings", "drawings",
+    "specifications", "cost_opinions", "reports", "milestones", "risks",
+    "statement_of_purpose", "hazard_assessment",
+    "scope_of_work", "scope_of_services", "qa_qc_plan",
+    "wbs_link", "schedule_link", "bim_link", "fee_link",
+    "invoice_frequency", "invoice_date",
+    "progress_frequency", "progress_format", "progress_delivery",
+)
+
+
 @app.post("/generate")
 async def generate(request: Request):
     data = await request.json()
-    session_id = data.get("session_id", str(uuid.uuid4()))
-    fields = data.get("fields", {})
-    team = data.get("team", [])
-    milestones = data.get("milestones", [])
-    scope_of_work = data.get("scope_of_work", "")
-    scope_of_services = data.get("scope_of_services", "")
+    session_id = data.get("session_id") or str(uuid.uuid4())
 
     output_path = OUTPUTS_DIR / f"{session_id}.docx"
     build(
         template_path=TEMPLATE,
         output_path=output_path,
-        fields=fields,
-        team=team,
-        milestones=milestones,
-        scope_of_work=scope_of_work,
-        scope_of_services=scope_of_services,
+        fields=data.get("fields", {}),
+        **{k: data.get(k) for k in BUILD_KEYS},
     )
     return {"download_id": session_id}
 
