@@ -1,6 +1,6 @@
 """
-Smoke test — fills every section of the template with sample data.
-Run: python tests/test_pipeline.py    Output: tests/output_test.docx
+Smoke test — builds a document with every section populated.
+Run: python tests/test_pipeline.py    Output: build/sample-project-plan.docx
 """
 from pathlib import Path
 import sys
@@ -8,11 +8,11 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from output.builder import build  # noqa: E402
 
-TEMPLATE = Path(__file__).parent.parent / "templates" / "project-plan-template.docx"
-OUTPUT = Path(__file__).parent / "output_full.docx"
+BUILD_DIR = Path(__file__).parent.parent / "build"
+BUILD_DIR.mkdir(exist_ok=True)
+OUTPUT = BUILD_DIR / "sample-project-plan.docx"
 
 result = build(
-    template_path=TEMPLATE,
     output_path=OUTPUT,
     fields={
         "Project Name": "Riverside Fire Station No. 3 Renovation",

@@ -6,6 +6,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "uvicorn", "src.api.main:app", "--reload", "--port", "8000"],
       "port": 8000
+    },
+    {
+      "name": "resource-planner-app",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "uvicorn", "main:app", "--reload", "--port", "8001", "--app-dir", "C:\\Users\\epravato\\OneDrive - H2M\\Desktop\\Projects\\Resource Planner App\\src"],
+      "port": 8001
     }
   ]
 }

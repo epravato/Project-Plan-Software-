@@ -5,3 +5,11 @@ dist/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Generated sample/test documents
+build/
+
+# Live project data — never commit: contains client information that must stay
+# inside H2M's compliance boundary. Backed up to data/_trash/ on delete, never
+# hard-deleted.
+data/

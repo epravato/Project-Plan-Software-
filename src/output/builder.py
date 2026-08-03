@@ -1,234 +1,278 @@
 """
-Fills the H2M project plan Word template.
+Builds the H2M project plan Word document from scratch (no template file).
 
-The template nests every real table inside a 1x1 wrapper table, so tables are
-addressed by a dotted path: "1.0" means wrapper table 1, first nested table.
-Table map (see tests/inspect_tables.py to regenerate):
-
-    0.0   Section I    General project info (content controls)
-    1.0   Section II   Project team
-    2.0   Section IIIB Client's critical success factors
-    3.0   Section IIIB H2M's critical success factors
-    4.0   Section IVA  Meetings
-    5.0   Section IVB  Drawings
-    6.0   Section IVC  Specifications
-    7.0   Section IVD  Cost opinions
-    8.0   Section IVE  Reports
-    9.0   Section VIIB Invoice frequency
-    10.0  Section VIIB Milestones
-    11.0  Section VIIIC Progress reports
-    12.0  Section XI   Risk management
+Generates a clean, report-style document rather than filling H2M's old rigid
+form-style template — narrative sections read as prose, lookups (contacts,
+team, milestones, risks) stay in clean tables. Section order/numbering matches
+H2M's official "Minimum Requirements of a Project Plan" (12 required sections).
 """
 
-import copy
 from pathlib import Path
 
 from docx import Document
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml.ns import qn
-from lxml import etree
+from docx.oxml import OxmlElement
+from docx.shared import Pt, Inches, RGBColor
 
-W_T = qn("w:t")
-W_R = qn("w:r")
-W_P = qn("w:p")
-W_TC = qn("w:tc")
-W_TR = qn("w:tr")
-W_TBL = qn("w:tbl")
-XML_SPACE = "{http://www.w3.org/XML/1998/namespace}space"
+BLUE = RGBColor(0x67, 0x90, 0xB1)
+BLUE_DARK = RGBColor(0x4A, 0x75, 0x94)
+GREEN = RGBColor(0xA2, 0xC0, 0x37)
+INK = RGBColor(0x2E, 0x2E, 0x30)
+MUTED = RGBColor(0x6B, 0x6B, 0x6E)
+BORDER_HEX = "D3DAE1"
 
-
-# ---------------------------------------------------------------- primitives
-
-
-def _text_of(el) -> str:
-    return "".join(t.text or "" for t in el.iter(W_T))
+NO_VALUE = "Not yet provided."
+NO_ROWS = "None entered."
 
 
-def _set_text(container, text: str):
-    """
-    Replace all text under `container`, keeping the first run's formatting.
-    Searches recursively: content controls wrap a <w:tc>, so their paragraphs
-    sit deeper than a direct-child lookup would reach.
-    """
-    paras = [container] if container.tag == W_P else list(container.iter(W_P))
-    if not paras:
-        return
-    first, *rest = paras
+# ------------------------------------------------------------------ oxml helpers
 
-    def strip_runs(p, keep_first: bool):
-        """Remove runs anywhere under p (including inside w:hyperlink wrappers)."""
-        kept = None
-        for r in list(p.iter(W_R)):
-            if keep_first and kept is None and r.getparent() is p:
-                kept = r
-                continue
-            r.getparent().remove(r)
-        return kept
-
-    keep = strip_runs(first, keep_first=True)
-    if keep is None:
-        keep = etree.SubElement(first, W_R)
-    for t in keep.findall(W_T)[1:]:
-        keep.remove(t)
-    t = keep.find(W_T)
-    if t is None:
-        t = etree.SubElement(keep, W_T)
-    t.text = text
-    t.set(XML_SPACE, "preserve")
-
-    for p in rest:
-        strip_runs(p, keep_first=False)
+def _shade(cell, hex_color):
+    tcPr = cell._tc.get_or_add_tcPr()
+    shd = OxmlElement("w:shd")
+    shd.set(qn("w:val"), "clear")
+    shd.set(qn("w:fill"), hex_color)
+    tcPr.append(shd)
 
 
-# ------------------------------------------------------------------- tables
+def _bottom_border(paragraph, hex_color, size=8):
+    pPr = paragraph._p.get_or_add_pPr()
+    pBdr = OxmlElement("w:pBdr")
+    bottom = OxmlElement("w:bottom")
+    bottom.set(qn("w:val"), "single")
+    bottom.set(qn("w:sz"), str(size))
+    bottom.set(qn("w:space"), "6")
+    bottom.set(qn("w:color"), hex_color)
+    pBdr.append(bottom)
+    pPr.append(pBdr)
 
 
-def _nested_tables(tbl):
-    out = []
-    for tr in tbl.findall(W_TR):
-        for tc in tr.findall(W_TC):
-            out.extend(tc.findall(W_TBL))
-    return out
+def _no_borders(table):
+    tblPr = table._tbl.tblPr
+    borders = OxmlElement("w:tblBorders")
+    for edge in ("top", "left", "bottom", "right", "insideH", "insideV"):
+        el = OxmlElement(f"w:{edge}")
+        el.set(qn("w:val"), "none")
+        el.set(qn("w:sz"), "0")
+        borders.append(el)
+    tblPr.append(borders)
 
 
-def _resolve(doc, path: str):
-    """Resolve a dotted table path like '2.0' to a <w:tbl> element."""
-    top, *rest = (int(p) for p in path.split("."))
-    tbl = doc.tables[top]._tbl
-    for idx in rest:
-        nested = _nested_tables(tbl)
-        if idx >= len(nested):
-            return None
-        tbl = nested[idx]
-    return tbl
+def _tile(cell, letter, fill):
+    """One square of the H2M logo mark: white letter on a brand-color tile."""
+    cell.text = ""
+    cell.width = Inches(0.26)
+    p = cell.paragraphs[0]
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_after = Pt(0)
+    p.paragraph_format.space_before = Pt(0)
+    if letter:
+        run = p.add_run(letter)
+        run.font.name = "Calibri"
+        run.font.size = Pt(11)
+        run.font.bold = True
+        run.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+    if fill:
+        _shade(cell, fill)
 
 
-def _fill_rows(tbl, rows: list[list[str]], start: int, cols: list[int]):
-    """
-    Write `rows` into the table starting at row index `start`.
-    `cols` maps each value position to a cell index. Extra template rows are cleared.
-    """
-    trs = tbl.findall(W_TR)[start:]
-    for i, tr in enumerate(trs):
-        cells = tr.findall(W_TC)
-        values = rows[i] if i < len(rows) else [""] * len(cols)
-        for value, col in zip(values, cols):
-            if col < len(cells):
-                _set_text(cells[col], value)
+def _shrink_row_height(row, twips=140):
+    trPr = row._tr.get_or_add_trPr()
+    trHeight = OxmlElement("w:trHeight")
+    trHeight.set(qn("w:val"), str(twips))
+    trHeight.set(qn("w:hRule"), "atLeast")
+    trPr.append(trHeight)
 
 
-def fill_table(doc, path: str, rows, start: int, cols: list[int]):
-    tbl = _resolve(doc, path)
-    if tbl is not None and rows is not None:
-        _fill_rows(tbl, rows, start, cols)
+# ------------------------------------------------------------------ styles
+
+def _setup_styles(doc):
+    normal = doc.styles["Normal"]
+    normal.font.name = "Calibri"
+    normal.font.size = Pt(10.5)
+    normal.font.color.rgb = INK
+    normal.paragraph_format.line_spacing = 1.2
+    normal.paragraph_format.space_after = Pt(6)
+
+    title = doc.styles["Title"]
+    title.font.name = "Georgia"
+    title.font.size = Pt(26)
+    title.font.bold = True
+    title.font.color.rgb = INK
+    title.paragraph_format.space_after = Pt(2)
+
+    h1 = doc.styles["Heading 1"]
+    h1.font.name = "Georgia"
+    h1.font.size = Pt(14)
+    h1.font.bold = True
+    h1.font.color.rgb = BLUE_DARK
+    h1.paragraph_format.space_before = Pt(22)
+    h1.paragraph_format.space_after = Pt(6)
+    h1.paragraph_format.keep_with_next = True
+
+    h2 = doc.styles["Heading 2"]
+    h2.font.name = "Calibri"
+    h2.font.size = Pt(11.5)
+    h2.font.bold = True
+    h2.font.color.rgb = INK
+    h2.paragraph_format.space_before = Pt(12)
+    h2.paragraph_format.space_after = Pt(4)
+    h2.paragraph_format.keep_with_next = True
 
 
-# --------------------------------------------------------- content controls
+def _header_footer(doc, project_label):
+    section = doc.sections[0]
+    section.top_margin = Inches(0.85)
+    section.bottom_margin = Inches(0.75)
+    section.left_margin = Inches(0.9)
+    section.right_margin = Inches(0.9)
+
+    header = section.header
+    header.is_linked_to_previous = False
+    header.paragraphs[0].text = ""
+
+    # H2M logo mark: 2x2 tile grid (H / 2 / blank / M) plus the tagline, built
+    # from shaded cells rather than an image so there's no asset dependency.
+    logo = header.add_table(rows=2, cols=3, width=Inches(6.7))
+    _no_borders(logo)
+    _tile(logo.cell(0, 0), "H", "A2C037")
+    _tile(logo.cell(0, 1), "2", "58585A")
+    _tile(logo.cell(1, 0), "", None)
+    _tile(logo.cell(1, 1), "M", "6790B1")
+
+    name_cell = logo.cell(0, 2)
+    name_cell.text = ""
+    name_cell.width = Inches(6.0)
+    np = name_cell.paragraphs[0]
+    np.paragraph_format.space_after = Pt(0)
+    np.paragraph_format.left_indent = Inches(0.12)
+    nr = np.add_run("architects + engineers")
+    nr.font.name = "Calibri Light"
+    nr.font.size = Pt(13)
+    nr.font.color.rgb = RGBColor(0x8C, 0x8C, 0x8E)
+
+    tag_cell = logo.cell(1, 2)
+    tag_cell.text = ""
+    tp = tag_cell.paragraphs[0]
+    tp.paragraph_format.space_after = Pt(0)
+    tp.paragraph_format.left_indent = Inches(0.12)
+    t1 = tp.add_run("practical approach. ")
+    t1.font.name = "Calibri Light"
+    t1.font.size = Pt(8)
+    t1.font.color.rgb = RGBColor(0x8C, 0x8C, 0x8E)
+    t2 = tp.add_run("creative results.")
+    t2.font.name = "Calibri Light"
+    t2.font.size = Pt(8)
+    t2.font.color.rgb = RGBColor(0xC0, 0xA1, 0x6B)
+
+    rule = header.add_paragraph()
+    rule.paragraph_format.space_before = Pt(4)
+    rule.paragraph_format.space_after = Pt(0)
+    _bottom_border(rule, "A2C037", size=12)
+
+    footer = section.footer
+    footer.is_linked_to_previous = False
+    fp = footer.paragraphs[0]
+    fp.text = ""
+    frun = fp.add_run(project_label or "H2M Project Plan")
+    frun.font.size = Pt(8)
+    frun.font.color.rgb = MUTED
+    fp.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
 
-def fill_content_controls(doc, fields: dict[str, str]):
-    for sdt in doc.element.body.iter(qn("w:sdt")):
-        props = sdt.find(qn("w:sdtPr"))
-        if props is None:
-            continue
-        alias_el = props.find(qn("w:alias"))
-        if alias_el is None:
-            continue
-        alias = alias_el.get(qn("w:val"))
-        if alias not in fields:
-            continue
-        content = sdt.find(qn("w:sdtContent"))
-        if content is not None:
-            _set_text(content, fields[alias] or "")
+# ------------------------------------------------------------------ content helpers
+
+def _heading(doc, number, title):
+    p = doc.add_heading(level=1)
+    p.text = ""
+    run = p.add_run(f"{number}.  {title.upper()}")
+    run.font.name = "Georgia"
+    run.font.size = Pt(14)
+    run.font.bold = True
+    run.font.color.rgb = BLUE_DARK
+    _bottom_border(p, BORDER_HEX)
+    return p
 
 
-# ------------------------------------------------------------- text bodies
+def _subheading(doc, label, title):
+    p = doc.add_heading(level=2)
+    p.text = ""
+    run = p.add_run(f"{label}. {title}")
+    run.font.color.rgb = INK
+    return p
 
 
-def _body_paragraphs(doc):
-    return list(doc.element.body.iter(W_P))
+def _body(doc, text):
+    p = doc.add_paragraph()
+    if text:
+        p.add_run(text)
+    else:
+        run = p.add_run(NO_VALUE)
+        run.italic = True
+        run.font.color.rgb = MUTED
+    return p
 
 
-def replace_between(doc, after: str, before: str, text: str):
-    """
-    Replace the paragraphs between the heading containing `after` and the one
-    containing `before` with a single paragraph of `text`.
-    Used for narrative sections that ship with EXAMPLE copy in the template.
-    """
-    paras = doc.paragraphs
-    start = end = None
-    for i, p in enumerate(paras):
-        t = p.text.strip()
-        if start is None and after.lower() in t.lower():
-            start = i
-        elif start is not None and before.lower() in t.lower():
-            end = i
-            break
-    if start is None or end is None or end <= start + 1:
-        return
-
-    body = paras[start + 1 : end]
-    _set_text(body[0]._p, text)
-    # Strip the example bullets / trailing copy
-    for p in body[1:]:
-        p._p.getparent().remove(p._p)
+def _meta_line(doc, label, value):
+    p = doc.add_paragraph()
+    p.paragraph_format.space_after = Pt(3)
+    r1 = p.add_run(f"{label}:  ")
+    r1.bold = True
+    r1.font.size = Pt(9.5)
+    r1.font.color.rgb = MUTED
+    r2 = p.add_run(value or "TBD")
+    r2.font.size = Pt(9.5)
+    return p
 
 
-def replace_placeholder(doc, placeholder: str, replacement: str):
-    """Replace a <bracketed> placeholder wherever it appears."""
-    for p in doc.paragraphs:
-        if placeholder in p.text:
-            _set_text(p._p, replacement)
+def _table(doc, headers, rows, col_widths=None):
+    table = doc.add_table(rows=1, cols=len(headers))
+    table.style = "Table Grid"
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+    head = table.rows[0]
+    for i, text in enumerate(headers):
+        cell = head.cells[i]
+        cell.text = ""
+        run = cell.paragraphs[0].add_run(text.upper())
+        run.font.size = Pt(8.5)
+        run.font.bold = True
+        run.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+        _shade(cell, "6790B1")
+    _shrink_row_height(head)
+
+    if not rows:
+        row = table.add_row()
+        cell = row.cells[0]
+        for c in row.cells[1:]:
+            cell.merge(c)
+        run = cell.paragraphs[0].add_run(NO_ROWS)
+        run.italic = True
+        run.font.size = Pt(9.5)
+        run.font.color.rgb = MUTED
+    else:
+        for values in rows:
+            row = table.add_row()
+            for i, value in enumerate(values):
+                cell = row.cells[i]
+                run = cell.paragraphs[0].add_run(str(value) if value else "")
+                run.font.size = Pt(9.5)
+
+    if col_widths:
+        for i, w in enumerate(col_widths):
+            if w is not None:
+                for row in table.rows:
+                    row.cells[i].width = Inches(w)
+
+    doc.add_paragraph().paragraph_format.space_after = Pt(2)
+    return table
 
 
-def _find_para(doc, text: str, style: str | None = None):
-    for p in doc.paragraphs:
-        if text.lower() in p.text.strip().lower() and (style is None or p.style.name == style):
-            return p
-    return None
-
-
-def insert_health_safety(doc, hazard_assessment: str):
-    """
-    Insert the Health & Safety section, which the Word template omits but the
-    firm's 'Minimum Requirements of a Project Plan' lists as section IV.
-
-    Roman numerals come from the PMP Heading style's numbering, so inserting
-    here renumbers the following sections automatically. Headings are cloned
-    from existing ones to inherit that numbering.
-    """
-    anchor = _find_para(doc, "PROJECT DELIVERABLES", "PMP Heading")
-    h1_src = _find_para(doc, "OVERVIEW", "PMP Heading")
-    h2_src = _find_para(doc, "Statement of Purpose", "PMP Heading 2")
-    if anchor is None or h1_src is None or h2_src is None:
-        return
-
-    heading = copy.deepcopy(h1_src._p)
-    _set_text(heading, "HEALTH & SAFETY")
-
-    sub = copy.deepcopy(h2_src._p)
-    _set_text(sub, "Project Hazard Assessment")
-
-    body = copy.deepcopy(h2_src._p)
-    body_style = body.find(qn("w:pPr"))
-    if body_style is not None:
-        num = body_style.find(qn("w:numPr"))
-        if num is not None:
-            body_style.remove(num)
-        st = body_style.find(qn("w:pStyle"))
-        if st is not None:
-            st.set(qn("w:val"), "PMPNormal")
-    _set_text(body, hazard_assessment)
-
-    anchor._p.addprevious(heading)
-    anchor._p.addprevious(sub)
-    anchor._p.addprevious(body)
-
-
-# ------------------------------------------------------------------- build
-
+# ------------------------------------------------------------------------ build
 
 def build(
-    template_path: str | Path,
     output_path: str | Path,
     fields: dict[str, str] | None = None,
     team: list[dict] | None = None,
@@ -256,112 +300,153 @@ def build(
     progress_format: str | None = None,
     progress_delivery: str | None = None,
 ):
-    doc = Document(str(template_path))
+    fields = fields or {}
+    doc = Document()
+    _setup_styles(doc)
 
-    fill_content_controls(doc, fields or {})
+    project_name = fields.get("Project Name") or "Untitled Project"
+    client_name = fields.get("Client Company") or ""
+    _header_footer(doc, f"{project_name} — Project Plan")
 
-    fill_table(
-        doc, "1.0", [[m.get("name", ""), m.get("organization", ""), m.get("role", ""),
-                      m.get("email", ""), m.get("phone", "")] for m in (team or [])],
-        start=1, cols=[0, 1, 2, 3, 4],
-    )
+    # ---- Title block
+    doc.add_paragraph().text = ""
+    title = doc.add_paragraph(style="Title")
+    title.add_run(project_name)
+    if client_name:
+        sub = doc.add_paragraph()
+        sub.paragraph_format.space_after = Pt(16)
+        run = sub.add_run(client_name)
+        run.italic = True
+        run.font.size = Pt(13)
+        run.font.color.rgb = MUTED
 
-    for path, data in (("2.0", client_success), ("3.0", h2m_success)):
-        fill_table(
-            doc, path,
-            [[f.get("factor", ""), f.get("metric", "")] for f in (data or [])],
-            start=1, cols=[1, 3],
-        )
-
-    fill_table(
-        doc, "4.0", [[m.get("type", ""), m.get("frequency", ""), m.get("attendees", "")]
-                     for m in (meetings or [])],
-        start=1, cols=[0, 1, 2],
-    )
-
-    fill_table(
-        doc, "5.0", [[d.get("discipline", ""), d.get("number", ""), d.get("title", "")]
-                     for d in (drawings or [])],
-        start=1, cols=[0, 1, 2],
-    )
-
-    fill_table(
-        doc, "6.0", [[s.get("section_no", ""), s.get("name", "")] for s in (specifications or [])],
-        start=1, cols=[0, 1],
-    )
-
-    for path, data in (("7.0", cost_opinions), ("8.0", reports)):
-        fill_table(
-            doc, path,
-            [[r.get("milestone", ""), r.get("title", ""), r.get("comments", "")] for r in (data or [])],
-            start=1, cols=[0, 1, 2],
-        )
-
-    fill_table(
-        doc, "10.0",
-        [[str(i + 1), m.get("description", ""), m.get("date", "")]
-         for i, m in enumerate(milestones or [])],
-        start=2, cols=[0, 1, 2],
-    )
-
-    fill_table(
-        doc, "12.0",
-        [[r.get("factor", ""), r.get("impact", ""), str(r.get("severity", "")),
-          str(r.get("probability", "")), str(r.get("priority", "")),
-          r.get("mitigation", ""), r.get("by_whom", ""), r.get("by_when", "")]
-         for r in (risks or [])],
-        start=1, cols=[0, 1, 2, 3, 4, 5, 6, 7],
-    )
-
-    # Invoice frequency / date  (row 1: Frequency | <val> | | Date: | <val>)
-    if invoice_frequency is not None or invoice_date is not None:
-        tbl = _resolve(doc, "9.0")
-        if tbl is not None:
-            cells = tbl.findall(W_TR)[1].findall(W_TC)
-            if invoice_frequency is not None and len(cells) > 1:
-                _set_text(cells[1], invoice_frequency)
-            if invoice_date is not None and len(cells) > 4:
-                _set_text(cells[4], invoice_date)
-
-    # Progress reports (row 1: Frequency: | <v> | Format: | <v> | Delivery Method: | <v>)
-    if any(v is not None for v in (progress_frequency, progress_format, progress_delivery)):
-        tbl = _resolve(doc, "11.0")
-        if tbl is not None:
-            cells = tbl.findall(W_TR)[1].findall(W_TC)
-            for idx, value in ((1, progress_frequency), (3, progress_format), (5, progress_delivery)):
-                if value is not None and idx < len(cells):
-                    _set_text(cells[idx], value)
-
-    if statement_of_purpose:
-        replace_between(doc, "Statement of Purpose", "Success Factors", statement_of_purpose)
-
-    # Always inserted so the output satisfies the firm's minimum requirements
-    # and section numbering stays stable whether or not the PM filled it in.
-    insert_health_safety(
+    # ---- I. General Project Information
+    _heading(doc, "I", "General Project Information")
+    _table(
         doc,
-        hazard_assessment
-        or "To be completed — refer to the H2M Project Hazard Assessment Form.",
+        ["", "H2M Project Team", "Client"],
+        [
+            ["Contact", fields.get("Project Contact", ""), fields.get("Client Contact", "")],
+            ["Location", fields.get("Project Location", ""), fields.get("Client Location", "")],
+            ["Phone", fields.get("Project Phone", ""), fields.get("Client Phone", "")],
+            ["Fax", fields.get("Project Fax", ""), fields.get("Client Fax", "")],
+            ["E-Mail", fields.get("Project E-Mail", ""), fields.get("Client E-Mail", "")],
+        ],
+        col_widths=[1.1, 2.6, 2.6],
     )
 
-    if qa_qc_plan:
-        replace_between(doc, "QA AND QC PLANS", "RISK MANAGEMENT PLAN", qa_qc_plan)
+    # ---- II. Project Team
+    _heading(doc, "II", "Project Team")
+    _table(
+        doc, ["Name", "Organization", "Role", "Email", "Phone"],
+        [[m.get("name", ""), m.get("organization", ""), m.get("role", ""),
+          m.get("email", ""), m.get("phone", "")] for m in (team or [])],
+    )
 
-    for placeholder, value in (
-        ("<Describe the work that will take place to achieve the Clients goals>", scope_of_work),
-        ("<Describe in detail, the services that H2M will be providing in support of the above>", scope_of_services),
-        ("<Insert link to Project Set-up Form>", fee_link),
-    ):
-        if value:
-            replace_placeholder(doc, placeholder, value)
+    # ---- III. Overview
+    _heading(doc, "III", "Overview")
+    _subheading(doc, "A", "Statement of Purpose")
+    _body(doc, statement_of_purpose)
+    _subheading(doc, "B", "Critical Success Factors")
+    p = doc.add_paragraph()
+    r = p.add_run("Client's Critical Success Factors")
+    r.bold = True
+    r.font.size = Pt(10)
+    _table(
+        doc, ["Success Factor", "Performance Objective"],
+        [[f.get("factor", ""), f.get("metric", "")] for f in (client_success or [])],
+    )
+    p = doc.add_paragraph()
+    r = p.add_run("H2M's Critical Success Factors")
+    r.bold = True
+    r.font.size = Pt(10)
+    _table(
+        doc, ["Success Factor", "Performance Objective"],
+        [[f.get("factor", ""), f.get("metric", "")] for f in (h2m_success or [])],
+    )
 
-    # Sections V, VIII.A and IX all ship with the same WBS placeholder text.
-    wbs_placeholder = "<Insert link to the detailed WBS developed for the project>"
-    for value in (wbs_link, schedule_link, bim_link):
-        if value:
-            for p in doc.paragraphs:
-                if wbs_placeholder in p.text:
-                    _set_text(p._p, value)
-                    break
+    # ---- IV. Health & Safety
+    _heading(doc, "IV", "Health & Safety")
+    _subheading(doc, "A", "Project Hazard Assessment")
+    _body(doc, hazard_assessment or "To be completed — refer to the H2M Project Hazard Assessment Form.")
+
+    # ---- V. Project Deliverables
+    _heading(doc, "V", "Project Deliverables")
+    _subheading(doc, "A", "Meetings")
+    _table(
+        doc, ["Type", "Frequency", "Anticipated Attendees (By Title)"],
+        [[m.get("type", ""), m.get("frequency", ""), m.get("attendees", "")] for m in (meetings or [])],
+    )
+    _subheading(doc, "B", "Drawings")
+    _table(
+        doc, ["Discipline", "Dwg. #", "Dwg. Title"],
+        [[d.get("discipline", ""), d.get("number", ""), d.get("title", "")] for d in (drawings or [])],
+    )
+    _subheading(doc, "C", "Specifications")
+    _table(
+        doc, ["Div. - Section No.", "Specification Section Name"],
+        [[s.get("section_no", ""), s.get("name", "")] for s in (specifications or [])],
+    )
+    _subheading(doc, "D", "Cost Opinions")
+    _table(
+        doc, ["Milestone", "Type / Title", "Link / Comments"],
+        [[r_.get("milestone", ""), r_.get("title", ""), r_.get("comments", "")] for r_ in (cost_opinions or [])],
+    )
+    _subheading(doc, "E", "Reports")
+    _table(
+        doc, ["Milestone", "Type / Title", "Link / Comments"],
+        [[r_.get("milestone", ""), r_.get("title", ""), r_.get("comments", "")] for r_ in (reports or [])],
+    )
+
+    # ---- VI. Work Breakdown Structure
+    _heading(doc, "VI", "Work Breakdown Structure")
+    _meta_line(doc, "Link to detailed WBS", wbs_link)
+
+    # ---- VII. Scope of Work & Services
+    _heading(doc, "VII", "Scope of Work & Services")
+    _subheading(doc, "A", "Scope of Work")
+    _body(doc, scope_of_work)
+    _subheading(doc, "B", "Scope of Services")
+    _body(doc, scope_of_services)
+
+    # ---- VIII. Project Financials
+    _heading(doc, "VIII", "Project Financials")
+    _meta_line(doc, "Link to Project Set-up Form", fee_link)
+    _meta_line(doc, "Invoice Frequency", invoice_frequency)
+    _meta_line(doc, "Send By Date", invoice_date)
+
+    # ---- IX. Schedule & Milestones
+    _heading(doc, "IX", "Schedule & Milestones")
+    _subheading(doc, "A", "Project Schedule")
+    _meta_line(doc, "Link to Detailed Project Schedule", schedule_link)
+    _subheading(doc, "B", "Project Milestones")
+    _table(
+        doc, ["#", "Milestone Description", "Date"],
+        [[i + 1, m.get("description", ""), m.get("date", "")] for i, m in enumerate(milestones or [])],
+        col_widths=[0.4, 4.3, 1.5],
+    )
+    _subheading(doc, "C", "Progress Reports")
+    _meta_line(doc, "Frequency", progress_frequency)
+    _meta_line(doc, "Format", progress_format)
+    _meta_line(doc, "Delivery Method", progress_delivery)
+
+    # ---- X. BIM/CAD Requirements
+    _heading(doc, "X", "BIM / CAD Requirements")
+    _meta_line(doc, "Link to BIM Execution Plan", bim_link)
+
+    # ---- XI. QA and QC Plans
+    _heading(doc, "XI", "QA and QC Plans")
+    _body(doc, qa_qc_plan)
+
+    # ---- XII. Risk Management Plan
+    _heading(doc, "XII", "Risk Management Plan")
+    _table(
+        doc, ["Risk Factor", "Potential Impact", "Sev.", "Prob.", "Mitigation Measures", "By Whom", "By When"],
+        [[r_.get("factor", ""), r_.get("impact", ""), r_.get("severity", ""),
+          r_.get("probability", ""), r_.get("mitigation", ""), r_.get("by_whom", ""), r_.get("by_when", "")]
+         for r_ in (risks or [])],
+        col_widths=[1.6, 1.6, 0.5, 0.5, 2.0, 0.7, 0.9],
+    )
 
     doc.save(str(output_path))
     return output_path

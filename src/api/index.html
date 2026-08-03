@@ -46,8 +46,13 @@
   .mark .t-m { background: var(--h2m-blue); }
   .logo { font-family: Georgia, serif; font-size: 19px; color: var(--h2m-gray); line-height: 1.2; }
   .logo span { display: block; color: var(--muted); font-size: 12px; font-family: system-ui, sans-serif; }
-  .save-state { margin-left: auto; font-size: 12px; color: var(--muted); }
+  .current-project { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 13px; color: var(--muted); }
+  .current-project strong { color: var(--text); font-weight: 600; }
+  .save-state { font-size: 12px; color: var(--muted); }
+  .btn-link { background: none; border: 1px solid var(--border); color: var(--h2m-blue-dark); font-size: 12.5px; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-family: inherit; }
+  .btn-link:hover { background: var(--accent-light); }
 
+  body:not(.in-wizard) .steps { display: none; }
   .steps { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); padding: 0 32px; position: sticky; top: 62px; z-index: 19; }
   .step { padding: 12px 20px; font-size: 13px; color: var(--muted); border-bottom: 2px solid transparent; }
   .step.active { color: var(--h2m-blue-dark); border-bottom-color: var(--h2m-blue); font-weight: 600; }
@@ -123,6 +128,24 @@
   .btn-small { padding: 5px 13px; font-size: 12.5px; margin-top: 10px; }
   .btn-row { display: flex; gap: 12px; margin-top: 26px; }
 
+  /* Context completeness bar */
+  .context-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; margin-bottom: 20px; }
+  .context-bar-top { display: flex; align-items: center; gap: 14px; }
+  .context-bar-label { font-size: 13.5px; white-space: nowrap; }
+  .context-bar-label strong { color: var(--text); }
+  .context-bar-track { flex: 1; height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; }
+  .context-bar-fill { height: 100%; background: var(--h2m-green); border-radius: 999px; transition: width .25s ease, background-color .25s ease; }
+  .context-bar-fill.partial { background: var(--amber); }
+  .context-bar-gaps { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .gap-item { font-size: 13px; color: var(--amber); background: var(--amber-bg); border-radius: 4px; padding: 6px 10px; }
+  .gap-item strong { color: var(--amber); }
+  .context-bar-done { margin-top: 12px; font-size: 13px; color: var(--green); }
+
+  .sec-status { margin-left: auto; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+  .sec-status.ready { color: var(--green); background: var(--green-bg); }
+  .sec-status.needs { color: var(--amber); background: var(--amber-bg); }
+  .sec-status.optional { color: var(--muted); background: var(--bg); }
+
   .success-box { background: var(--green-bg); border: 1px solid var(--h2m-green); border-left: 4px solid var(--h2m-green); border-radius: 8px; padding: 32px; text-align: center; }
   .success-box .icon { font-size: 38px; margin-bottom: 10px; }
   .success-box h3 { font-family: Georgia, serif; font-size: 20px; font-weight: normal; color: var(--h2m-green-dark); margin-bottom: 8px; }
@@ -130,6 +153,56 @@
 
   .spinner { display: none; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--h2m-blue); border-radius: 50%; animation: spin .7s linear infinite; margin-top: 16px; }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  .progress-wrap { display: none; margin-top: 16px; }
+  .progress-track { width: 100%; height: 8px; border-radius: 999px; background: var(--bg); border: 1px solid var(--border); overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: var(--h2m-blue); border-radius: 999px; transition: width .4s ease; }
+  .progress-label { margin-top: 8px; font-size: 13px; color: var(--muted); }
+
+  .ai-suggestions { background: var(--green-bg); border: 1px solid var(--h2m-green); border-left: 4px solid var(--h2m-green); border-radius: 8px; padding: 16px 20px; margin-bottom: 20px; }
+  .ai-suggestions-title { font-weight: 600; color: var(--h2m-green-dark); margin-bottom: 10px; font-size: 14px; }
+  .ai-suggestions-block + .ai-suggestions-block { margin-top: 12px; }
+  .ai-suggestions-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .ai-suggestions ul { margin: 0; padding-left: 20px; font-size: 13px; color: var(--text); }
+  .ai-suggestions li { margin-bottom: 4px; }
+
+  /* Project home */
+  .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-bottom: 30px; }
+  .project-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--h2m-blue); border-radius: 6px; padding: 16px 18px; cursor: pointer; text-align: left; font-family: inherit; }
+  .project-card:hover { border-color: var(--h2m-blue); background: var(--accent-light); }
+  .project-card .pnum { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .project-card .pname { font-family: Georgia, serif; font-size: 16px; margin: 4px 0 6px; padding-right: 20px; }
+  .project-card .pclient { font-size: 12.5px; color: var(--muted); }
+  .project-card .pupdated { font-size: 11px; color: var(--muted); margin-top: 10px; }
+  .project-card .p-delete { position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--border); font-size: 17px; line-height: 1; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+  .project-card .p-delete:hover { color: var(--red); background: var(--amber-bg); }
+  .empty-state { color: var(--muted); font-size: 14px; padding: 20px 0 30px; }
+  .new-project-form { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px 24px; max-width: 480px; }
+  .new-project-form h3 { font-family: Georgia, serif; font-weight: normal; font-size: 16px; margin-bottom: 16px; }
+  .new-project-form .field-group { margin-bottom: 12px; }
+
+  /* Settings modal */
+  .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(46,46,48,.45); z-index: 50; align-items: center; justify-content: center; }
+  .modal-backdrop.open { display: flex; }
+  .modal { background: var(--surface); border-radius: 8px; width: 420px; max-width: calc(100vw - 32px); padding: 26px 28px; }
+  .modal h3 { font-family: Georgia, serif; font-weight: normal; font-size: 18px; margin-bottom: 4px; }
+  .modal .sub { margin-bottom: 20px; }
+  .provider-option { display: flex; align-items: flex-start; gap: 10px; border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; margin-bottom: 10px; cursor: pointer; }
+  .provider-option:hover { border-color: var(--h2m-blue); }
+  .provider-option input { margin-top: 3px; }
+  .provider-option .p-title { font-weight: 600; font-size: 14px; }
+  .provider-option .p-desc { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .key-field { margin-top: 4px; margin-bottom: 6px; display: none; }
+  .key-field.show { display: block; }
+  .key-status { font-size: 12px; color: var(--green); margin-top: 4px; }
+  .context-field { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .context-field label { font-weight: 600; font-size: 13px; }
+  .context-field .sub { font-size: 12px; margin: 2px 0 10px; }
+  .context-row { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .context-row .cr-label { font-weight: 600; min-width: 90px; }
+  .context-row .cr-path { flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .context-add-row { display: flex; gap: 6px; margin-top: 10px; }
+  .context-add-row input { flex: 1; min-width: 0; }
 </style>
 </head>
 <body>
@@ -137,8 +210,57 @@
 <header>
   <div class="mark" aria-label="H2M"><i class="t-h">H</i><i class="t-2">2</i><i class="t-blank"></i><i class="t-m">M</i></div>
   <div class="logo">Project Plan Generator<span>architects + engineers</span></div>
-  <div class="save-state" id="save-state"></div>
+  <div class="current-project" id="current-project" style="display:none;">
+    <span><strong id="cp-name"></strong></span>
+    <span class="save-state" id="save-state"></span>
+    <button class="btn-link" onclick="goHome()">← All Projects</button>
+  </div>
+  <button class="btn-link" id="btn-open-settings" style="margin-left:12px;">⚙ Settings</button>
 </header>
+
+<div class="modal-backdrop" id="settings-backdrop">
+  <div class="modal">
+    <h3>AI Extraction Settings</h3>
+    <p class="sub">Choose which model reads your uploaded documents.</p>
+
+    <label class="provider-option">
+      <input type="radio" name="ai-provider" value="ollama">
+      <div>
+        <div class="p-title">Local (Ollama)</div>
+        <div class="p-desc">Runs on this machine. Free, no approval needed, but slower and lower quality on longer documents.</div>
+      </div>
+    </label>
+    <label class="provider-option">
+      <input type="radio" name="ai-provider" value="anthropic">
+      <div>
+        <div class="p-title">Claude Sonnet 5 (Anthropic API)</div>
+        <div class="p-desc">Faster and higher quality, handles full documents in one pass. Requires an API key and compliance approval for company data.</div>
+      </div>
+    </label>
+
+    <div class="field-group key-field" id="key-field">
+      <label>Anthropic API Key</label>
+      <input type="password" id="settings-api-key" placeholder="sk-ant-...">
+      <div class="key-status" id="key-status" style="display:none;">A key is already saved. Leave blank to keep it.</div>
+    </div>
+
+    <div class="context-field">
+      <label>Company-Drive Context Sources</label>
+      <p class="sub">Read-only folders of markdown files (standards, directory, etc.) — read fresh on every extraction. The built-in "H2M Standards" folder is always included.</p>
+      <div id="context-rows"></div>
+      <div class="context-add-row">
+        <input type="text" id="context-new-label" placeholder="Label (e.g. Standards)">
+        <input type="text" id="context-new-path" placeholder="\\server\share\path">
+        <button class="btn-link" id="btn-add-context">+ Add</button>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-save-settings">Save</button>
+      <button class="btn btn-secondary" id="btn-close-settings">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <div class="steps">
   <div class="step active">1 · Upload Documents</div>
@@ -148,22 +270,60 @@
 
 <main>
 
+<!-- STEP 0: PROJECT HOME -->
+<div class="panel active" id="panel-0">
+  <h2>Project Plans</h2>
+  <p class="sub">Open an existing project to keep working on its plan, or start a new one.</p>
+
+  <div class="project-grid" id="project-grid"></div>
+  <div class="empty-state" id="project-empty" style="display:none;">No project plans yet — create your first one below.</div>
+
+  <div class="new-project-form">
+    <h3>+ New Project Plan</h3>
+    <div class="field-group">
+      <label>Project Number</label>
+      <input type="text" id="np-number" placeholder="e.g. 12345.00">
+    </div>
+    <div class="field-group">
+      <label>Project Name</label>
+      <input type="text" id="np-name" placeholder="e.g. Riverside Fire Station No. 3">
+    </div>
+    <div class="field-group">
+      <label>Client</label>
+      <input type="text" id="np-client" placeholder="e.g. Town of Riverside">
+    </div>
+    <button class="btn btn-primary" id="btn-new-project">Create Project →</button>
+  </div>
+</div>
+
 <!-- STEP 1 -->
-<div class="panel active" id="panel-1">
+<div class="panel" id="panel-1">
   <h2>Upload Project Documents</h2>
   <p class="sub">Drag in the RFP, technical proposal, fee &amp; work breakdown, org chart, and project schedule. Anything the tool can't find gets flagged for you to fill in.</p>
   <div class="drop-zone" id="drop-zone">
     <div class="drop-zone-icon">📂</div>
     <p><strong>Drag files here</strong> or click to browse</p>
-    <p style="margin-top:6px;font-size:12px;">PDF, Word, Excel, PowerPoint</p>
-    <input type="file" id="file-input" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.pptx,.ppt">
+    <p style="margin-top:6px;font-size:12px;">PDF, Word, Excel, PowerPoint, or a .zip of these</p>
+    <input type="file" id="file-input" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.pptx,.ppt,.zip">
   </div>
   <div class="file-list" id="file-list"></div>
   <div class="btn-row">
     <button class="btn btn-primary" id="btn-upload" disabled>Process Documents →</button>
     <button class="btn btn-secondary" id="btn-skip">Skip — fill manually</button>
   </div>
-  <div class="spinner" id="spinner-1"></div>
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="progress-label" id="progress-label">Starting…</div>
+  </div>
+
+  <div class="context-bar" id="upload-context-bar" style="display:none; margin-top:26px;">
+    <div class="context-bar-top">
+      <div class="context-bar-label"><strong class="ctx-count">0 of 0</strong> core sections have enough context</div>
+      <div class="context-bar-track"><div class="context-bar-fill" style="width:0%"></div></div>
+    </div>
+    <div class="context-bar-gaps"></div>
+    <div class="context-bar-done" style="display:none;">Your uploaded documents cover every core section — just confirm the details on the next step.</div>
+  </div>
 </div>
 
 <!-- STEP 2 -->
@@ -171,20 +331,41 @@
   <h2>Review &amp; Edit</h2>
   <p class="sub">Every section of the project plan is below. <span style="background:var(--amber-bg);color:var(--amber);padding:1px 6px;border-radius:3px;font-size:12px;font-weight:600;">Flagged</span> fields need your input. Your work saves automatically.</p>
 
+  <div class="ai-suggestions" id="ai-suggestions" style="display:none;">
+    <div class="ai-suggestions-title">What would help fill in the rest</div>
+    <div class="ai-suggestions-block" id="ai-suggestions-docs" style="display:none;">
+      <div class="ai-suggestions-label">📄 Documents that could help</div>
+      <ul id="ai-suggestions-docs-list"></ul>
+    </div>
+    <div class="ai-suggestions-block" id="ai-suggestions-questions" style="display:none;">
+      <div class="ai-suggestions-label">❓ A few things to confirm</div>
+      <ul id="ai-suggestions-questions-list"></ul>
+    </div>
+  </div>
+
+  <div class="context-bar">
+    <div class="context-bar-top">
+      <div class="context-bar-label"><strong class="ctx-count">0 of 0</strong> core sections have enough context</div>
+      <div class="context-bar-track"><div class="context-bar-fill" style="width:0%"></div></div>
+    </div>
+    <div class="context-bar-gaps"></div>
+    <div class="context-bar-done" style="display:none;">All core sections have enough context to generate a complete plan.</div>
+  </div>
+
   <details class="section-card" open>
-    <summary><span class="roman">I</span> General Project Information</summary>
+    <summary><span class="roman">I</span> General Project Information<span class="sec-status" data-badge="I"></span></summary>
     <div class="card-body">
       <div class="field-grid" id="general-fields"></div>
     </div>
   </details>
 
   <details class="section-card" open>
-    <summary><span class="roman">II</span> Project Team</summary>
+    <summary><span class="roman">II</span> Project Team<span class="sec-status" data-badge="II"></span></summary>
     <div class="card-body" data-table="team"></div>
   </details>
 
   <details class="section-card" open>
-    <summary><span class="roman">III</span> Overview — Purpose &amp; Success Factors</summary>
+    <summary><span class="roman">III</span> Overview — Purpose &amp; Success Factors<span class="sec-status" data-badge="III"></span></summary>
     <div class="card-body">
       <div class="field-group full">
         <label>A. Statement of Purpose</label>
@@ -198,7 +379,7 @@
   </details>
 
   <details class="section-card">
-    <summary><span class="roman">IV</span> Health &amp; Safety</summary>
+    <summary><span class="roman">IV</span> Health &amp; Safety<span class="sec-status" data-badge="IV"></span></summary>
     <div class="card-body">
       <div class="hint">Required by H2M's <em>Minimum Requirements of a Project Plan</em>, but absent from the current Word template — filling this in adds the section to the output and renumbers the rest.</div>
       <div class="field-group full">
@@ -209,7 +390,7 @@
   </details>
 
   <details class="section-card">
-    <summary><span class="roman">V</span> Project Deliverables</summary>
+    <summary><span class="roman">V</span> Project Deliverables<span class="sec-status" data-badge="V"></span></summary>
     <div class="card-body">
       <div class="hint">A. Meetings — prefilled with H2M's standard set. Adjust as needed.</div>
       <div data-table="meetings"></div>
@@ -225,7 +406,7 @@
   </details>
 
   <details class="section-card">
-    <summary><span class="roman">VI</span> Work Breakdown Structure</summary>
+    <summary><span class="roman">VI</span> Work Breakdown Structure<span class="sec-status" data-badge="VI"></span></summary>
     <div class="card-body">
       <div class="field-group full">
         <label>Link to detailed WBS</label>
@@ -235,7 +416,7 @@
   </details>
 
   <details class="section-card" open>
-    <summary><span class="roman">VII</span> Scope of Work &amp; Services</summary>
+    <summary><span class="roman">VII</span> Scope of Work &amp; Services<span class="sec-status" data-badge="VII"></span></summary>
     <div class="card-body">
       <div class="field-group full" style="margin-bottom:14px;">
         <label>A. Scope of Work</label>
@@ -249,7 +430,7 @@
   </details>
 
   <details class="section-card">
-    <summary><span class="roman">VIII</span> Project Financials</summary>
+    <summary><span class="roman">VIII</span> Project Financials<span class="sec-status" data-badge="VIII"></span></summary>
     <div class="card-body">
       <div class="field-grid">
         <div class="field-group full">
@@ -269,7 +450,7 @@
   </details>
 
   <details class="section-card" open>
-    <summary><span class="roman">IX</span> Schedule &amp; Milestones</summary>
+    <summary><span class="roman">IX</span> Schedule &amp; Milestones<span class="sec-status" data-badge="IX"></span></summary>
     <div class="card-body">
       <div class="field-group full" style="margin-bottom:6px;">
         <label>A. Link to Detailed Project Schedule</label>
@@ -287,7 +468,7 @@
   </details>
 
   <details class="section-card">
-    <summary><span class="roman">X</span> BIM / CAD Requirements</summary>
+    <summary><span class="roman">X</span> BIM / CAD Requirements<span class="sec-status" data-badge="X"></span></summary>
     <div class="card-body">
       <div class="field-group full">
         <label>Link to BIM Execution Plan</label>
@@ -297,7 +478,7 @@
   </details>
 
   <details class="section-card">
-    <summary><span class="roman">XI</span> QA and QC Plans</summary>
+    <summary><span class="roman">XI</span> QA and QC Plans<span class="sec-status" data-badge="XI"></span></summary>
     <div class="card-body">
       <div class="field-group full">
         <label>Key management participants and schedules for QA and QC</label>
@@ -307,7 +488,7 @@
   </details>
 
   <details class="section-card">
-    <summary><span class="roman">XII</span> Risk Management Plan</summary>
+    <summary><span class="roman">XII</span> Risk Management Plan<span class="sec-status" data-badge="XII"></span></summary>
     <div class="card-body">
       <div class="hint">Priority rating is severity × probability. Enter probability as a percentage.</div>
       <div data-table="risks"></div>
@@ -330,7 +511,21 @@
     <a id="download-link" href="#" class="btn btn-primary" style="display:inline-block;text-decoration:none;">Download Project Plan.docx</a>
   </div>
   <div class="btn-row" style="justify-content:center;">
-    <button class="btn btn-secondary" onclick="startOver()">Start a New Plan</button>
+    <button class="btn btn-secondary" onclick="goHome()">← Back to All Projects</button>
+  </div>
+</div>
+
+<div class="panel" id="panel-clarify">
+  <h2>A few quick questions</h2>
+  <p class="sub">Answering these helps fill in more of the plan automatically. Skip to review any time.</p>
+  <div id="clarify-questions"></div>
+  <div class="btn-row" style="margin-top:20px;">
+    <button class="btn btn-primary" id="btn-clarify-continue">Submit &amp; Ask More →</button>
+    <button class="btn btn-secondary" id="btn-clarify-done">I have enough — Review &amp; Edit →</button>
+  </div>
+  <div class="progress-wrap" id="clarify-progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="clarify-progress-fill"></div></div>
+    <div class="progress-label" id="clarify-progress-label">Working…</div>
   </div>
 </div>
 
@@ -519,43 +714,148 @@ function buildGeneralFields() {
      </div>`).join('');
 }
 
+// ─────────────────────────────── context completeness
+
+const REQUIRED_SECTIONS = [
+  { key: 'I', label: 'General Project Information', check: data => {
+    const req = ['Project Name', 'Client Company', 'Project Contact', 'Client Contact', 'Project E-Mail', 'Client E-Mail'];
+    const missing = req.filter(a => !data.fields[a]);
+    return { done: !missing.length, gap: missing.length ? `Missing: ${missing.join(', ')}` : '' };
+  }},
+  { key: 'II', label: 'Project Team', check: data => {
+    const done = (data.team || []).some(m => m.name);
+    return { done, gap: 'Add at least one project team member.' };
+  }},
+  { key: 'III', label: 'Overview — Statement of Purpose', check: data => {
+    const done = !!(data.statement_of_purpose || '').trim();
+    return { done, gap: 'Statement of Purpose is empty.' };
+  }},
+  { key: 'IV', label: 'Health & Safety', check: data => {
+    const done = !!(data.hazard_assessment || '').trim();
+    return { done, gap: 'Project Hazard Assessment is empty.' };
+  }},
+  { key: 'VII', label: 'Scope of Work & Services', check: data => {
+    const missing = [];
+    if (!(data.scope_of_work || '').trim()) missing.push('Scope of Work');
+    if (!(data.scope_of_services || '').trim()) missing.push('Scope of Services');
+    return { done: !missing.length, gap: missing.length ? `Missing: ${missing.join(', ')}` : '' };
+  }},
+  { key: 'IX', label: 'Schedule & Milestones', check: data => {
+    const done = (data.milestones || []).some(m => (m.date || '').trim()) || !!(data.schedule_link || '').trim();
+    return { done, gap: 'Add at least one milestone date, or a link to the detailed schedule.' };
+  }},
+  { key: 'XI', label: 'QA and QC Plans', check: data => {
+    const done = !!(data.qa_qc_plan || '').trim();
+    return { done, gap: 'QA/QC plan is empty.' };
+  }},
+  { key: 'XII', label: 'Risk Management Plan', check: data => {
+    const done = (data.risks || []).some(r => r.factor && r.mitigation);
+    return { done, gap: 'Add at least one risk with a mitigation measure.' };
+  }},
+];
+const OPTIONAL_SECTIONS = ['V', 'VI', 'VIII', 'X'];
+
+function renderCompleteness() {
+  if (!currentProjectId) return;
+  const data = collect();
+  const results = REQUIRED_SECTIONS.map(s => ({ ...s, ...s.check(data) }));
+  const readyCount = results.filter(r => r.done).length;
+
+  const gaps = results.filter(r => !r.done);
+  const gapsHtml = gaps.map(r => `<div class="gap-item"><strong>${r.key}.</strong> ${r.label} — ${r.gap}</div>`).join('');
+
+  document.querySelectorAll('.context-bar').forEach(bar => {
+    bar.querySelector('.ctx-count').textContent = `${readyCount} of ${results.length}`;
+    const fill = bar.querySelector('.context-bar-fill');
+    fill.style.width = `${Math.round((readyCount / results.length) * 100)}%`;
+    fill.classList.toggle('partial', readyCount < results.length);
+
+    const gapsEl = bar.querySelector('.context-bar-gaps');
+    const doneEl = bar.querySelector('.context-bar-done');
+    if (gaps.length) {
+      gapsEl.style.display = 'flex';
+      doneEl.style.display = 'none';
+      gapsEl.innerHTML = gapsHtml;
+    } else {
+      gapsEl.style.display = 'none';
+      doneEl.style.display = 'block';
+    }
+  });
+
+  for (const r of results) {
+    const badge = document.querySelector(`[data-badge="${r.key}"]`);
+    if (!badge) continue;
+    badge.textContent = r.done ? '✓ Ready' : '⚠ Needs info';
+    badge.classList.toggle('ready', r.done);
+    badge.classList.toggle('needs', !r.done);
+  }
+  for (const key of OPTIONAL_SECTIONS) {
+    const badge = document.querySelector(`[data-badge="${key}"]`);
+    if (!badge) continue;
+    badge.textContent = 'Optional';
+    badge.classList.add('optional');
+  }
+}
+
 // ─────────────────────────────── state
 
-const STORAGE_KEY = 'h2m-project-plan-draft';
-let sessionId = null;
+let currentProjectId = null;
 let saveTimer = null;
+let currentSuggestions = null;
 
 function collect() {
   const fields = {};
   document.querySelectorAll('#general-fields input').forEach(i => fields[i.dataset.alias] = i.value.trim());
-  const data = { session_id: sessionId, fields };
+  const data = { fields };
   for (const [id, key] of Object.entries(SCALARS)) data[key] = document.getElementById(id).value.trim();
   for (const key of Object.keys(TABLES)) data[key] = readTable(key);
+  if (currentSuggestions) data.ai_suggestions = currentSuggestions;
   return data;
 }
 
 function scheduleSave() {
+  renderCompleteness();
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(save, 400);
+  saveTimer = setTimeout(save, 500);
 }
 
-function save() {
+async function save() {
+  if (!currentProjectId) return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(collect()));
-    const el = document.getElementById('save-state');
-    el.textContent = 'Saved ' + new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
-  } catch (e) { /* storage full or blocked — keep working */ }
+    await fetch(`/api/projects/${currentProjectId}/draft`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(collect()),
+    });
+    document.getElementById('save-state').textContent = 'Saved ' + new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  } catch (e) { /* offline — will retry on next edit */ }
 }
 
-function restore() {
-  let saved = null;
-  try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (e) {}
-  if (!saved) return false;
-  sessionId = saved.session_id;
-  applyFields(saved.fields || {});
-  for (const [id, key] of Object.entries(SCALARS)) document.getElementById(id).value = saved[key] || '';
-  for (const key of Object.keys(TABLES)) setTable(key, saved[key]);
-  return true;
+const SCALAR_DEFAULTS = {
+  'f-invoice-frequency': 'Monthly', 'f-progress-frequency': 'Monthly',
+  'f-progress-format': 'PDF', 'f-progress-delivery': 'Email',
+};
+
+function applyDraft(saved) {
+  applyFields((saved && saved.fields) || {});
+  for (const [id, key] of Object.entries(SCALARS)) {
+    document.getElementById(id).value = (saved && saved[key]) || SCALAR_DEFAULTS[id] || '';
+  }
+  for (const key of Object.keys(TABLES)) setTable(key, saved && saved[key]);
+  currentSuggestions = (saved && saved.ai_suggestions) || null;
+  renderSuggestions();
+}
+
+function renderSuggestions() {
+  const panel = document.getElementById('ai-suggestions');
+  const docs = (currentSuggestions && currentSuggestions.document_suggestions) || [];
+  const questions = (currentSuggestions && currentSuggestions.clarifying_questions) || [];
+  const docsBlock = document.getElementById('ai-suggestions-docs');
+  const questionsBlock = document.getElementById('ai-suggestions-questions');
+  const escapeHtml = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  document.getElementById('ai-suggestions-docs-list').innerHTML = docs.map(d => `<li>${escapeHtml(d)}</li>`).join('');
+  document.getElementById('ai-suggestions-questions-list').innerHTML = questions.map(q => `<li>${escapeHtml(q)}</li>`).join('');
+  docsBlock.style.display = docs.length ? 'block' : 'none';
+  questionsBlock.style.display = questions.length ? 'block' : 'none';
+  panel.style.display = (docs.length || questions.length) ? 'block' : 'none';
 }
 
 function applyFields(fields) {
@@ -566,14 +866,149 @@ function applyFields(fields) {
   });
 }
 
-function initBlank() {
-  applyFields({});
-  Object.keys(TABLES).forEach(k => setTable(k, null));
-  document.getElementById('f-invoice-frequency').value = 'Monthly';
-  document.getElementById('f-progress-frequency').value = 'Monthly';
-  document.getElementById('f-progress-format').value = 'PDF';
-  document.getElementById('f-progress-delivery').value = 'Email';
+// ─────────────────────────────── settings modal
+
+const settingsBackdrop = document.getElementById('settings-backdrop');
+const keyField = document.getElementById('key-field');
+const keyStatus = document.getElementById('key-status');
+
+function updateKeyFieldVisibility() {
+  const provider = document.querySelector('input[name="ai-provider"]:checked').value;
+  keyField.classList.toggle('show', provider === 'anthropic');
 }
+
+document.querySelectorAll('input[name="ai-provider"]').forEach(r => r.addEventListener('change', updateKeyFieldVisibility));
+
+let contextPaths = [];
+
+function renderContextRows() {
+  const wrap = document.getElementById('context-rows');
+  wrap.innerHTML = '';
+  contextPaths.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'context-row';
+    row.innerHTML = `<span class="cr-label">${p.label || '(no label)'}</span><span class="cr-path" title="${p.path}">${p.path}</span>`;
+    const remove = document.createElement('button');
+    remove.className = 'btn-link';
+    remove.textContent = '×';
+    remove.addEventListener('click', () => { contextPaths.splice(i, 1); renderContextRows(); });
+    row.appendChild(remove);
+    wrap.appendChild(row);
+  });
+}
+
+document.getElementById('btn-add-context').addEventListener('click', () => {
+  const labelInput = document.getElementById('context-new-label');
+  const pathInput = document.getElementById('context-new-path');
+  const path = pathInput.value.trim();
+  if (!path) return;
+  contextPaths.push({ label: labelInput.value.trim() || path, path });
+  labelInput.value = '';
+  pathInput.value = '';
+  renderContextRows();
+});
+
+async function openSettings() {
+  const res = await fetch('/api/settings');
+  const s = await res.json();
+  document.querySelector(`input[name="ai-provider"][value="${s.ai_provider}"]`).checked = true;
+  document.getElementById('settings-api-key').value = '';
+  keyStatus.style.display = s.has_anthropic_key ? 'block' : 'none';
+  updateKeyFieldVisibility();
+  contextPaths = (s.context_paths || []).map(p => ({ ...p }));
+  renderContextRows();
+  settingsBackdrop.classList.add('open');
+}
+
+function closeSettings() {
+  settingsBackdrop.classList.remove('open');
+}
+
+document.getElementById('btn-open-settings').addEventListener('click', openSettings);
+document.getElementById('btn-close-settings').addEventListener('click', closeSettings);
+settingsBackdrop.addEventListener('click', e => { if (e.target === settingsBackdrop) closeSettings(); });
+
+document.getElementById('btn-save-settings').addEventListener('click', async () => {
+  const provider = document.querySelector('input[name="ai-provider"]:checked').value;
+  const apiKey = document.getElementById('settings-api-key').value.trim();
+  const payload = { ai_provider: provider, context_paths: contextPaths };
+  if (apiKey) payload.anthropic_api_key = apiKey;
+  await fetch('/api/settings', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+  });
+  closeSettings();
+});
+
+// ─────────────────────────────── projects home
+
+async function loadProjects() {
+  const res = await fetch('/api/projects');
+  const projects = await res.json();
+  const grid = document.getElementById('project-grid');
+  const empty = document.getElementById('project-empty');
+  empty.style.display = projects.length ? 'none' : 'block';
+  grid.innerHTML = projects.map(p => `
+    <div class="project-card" data-open="${p.id}" role="button" tabindex="0">
+      <button class="p-delete" data-delete="${p.id}" title="Delete project">×</button>
+      <div class="pnum">${p.number || 'No project #'}</div>
+      <div class="pname">${p.name}</div>
+      <div class="pclient">${p.client || ''}</div>
+      <div class="pupdated">Updated ${new Date(p.updated).toLocaleDateString()}</div>
+    </div>`).join('');
+  grid.querySelectorAll('[data-open]').forEach(btn =>
+    btn.addEventListener('click', () => openProject(btn.dataset.open)));
+  grid.querySelectorAll('[data-delete]').forEach(btn =>
+    btn.addEventListener('click', e => { e.stopPropagation(); deleteProject(btn.dataset.delete); }));
+}
+
+async function deleteProject(id) {
+  if (!confirm('Delete this project? It will be moved to trash, not permanently deleted.')) return;
+  await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+  loadProjects();
+}
+
+async function openProject(id) {
+  const res = await fetch(`/api/projects/${id}`);
+  if (!res.ok) { alert('Could not open that project.'); return; }
+  const { meta, draft } = await res.json();
+  currentProjectId = meta.id;
+  document.getElementById('cp-name').textContent = meta.number ? `${meta.number} — ${meta.name}` : meta.name;
+  document.getElementById('current-project').style.display = 'flex';
+  document.getElementById('save-state').textContent = '';
+  document.body.classList.add('in-wizard');
+  selectedFiles = [];
+  fileList.innerHTML = '';
+  btnUpload.disabled = true;
+  document.getElementById('upload-context-bar').style.display = 'none';
+  applyDraft(draft);
+  renderCompleteness();
+  goTo(1);
+}
+
+function goHome() {
+  currentProjectId = null;
+  document.body.classList.remove('in-wizard');
+  document.getElementById('current-project').style.display = 'none';
+  loadProjects();
+  goTo(0);
+}
+
+document.getElementById('btn-new-project').addEventListener('click', async () => {
+  const number = document.getElementById('np-number').value.trim();
+  const name = document.getElementById('np-name').value.trim();
+  const client = document.getElementById('np-client').value.trim();
+  if (!name) { alert('Project name is required.'); return; }
+  const res = await fetch('/api/projects', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ number, name, client }),
+  });
+  if (!res.ok) { alert('Could not create project.'); return; }
+  const meta = await res.json();
+  document.getElementById('np-number').value = '';
+  document.getElementById('np-name').value = '';
+  document.getElementById('np-client').value = '';
+  await openProject(meta.id);
+});
 
 // ─────────────────────────────── upload
 
@@ -596,31 +1031,131 @@ function addFiles(files) {
   btnUpload.disabled = !selectedFiles.length;
 }
 
+async function pollUploadJob(jobId, fillId = 'progress-fill', labelId = 'progress-label') {
+  const fill = document.getElementById(fillId);
+  const label = document.getElementById(labelId);
+  while (true) {
+    const res = await fetch(`/api/projects/${currentProjectId}/upload/status/${jobId}`);
+    if (!res.ok) throw new Error('Lost track of the extraction job (server returned ' + res.status + ')');
+    const job = await res.json();
+    fill.style.width = (job.pct || 0) + '%';
+    label.textContent = job.stage || 'Working…';
+    if (job.status === 'done') return job;
+    if (job.status === 'error') throw new Error(job.error || 'Extraction failed');
+    await new Promise(r => setTimeout(r, 1000));
+  }
+}
+
+let latestDraft = null;
+
+function enterReviewFlow() {
+  applyDraft(latestDraft || {});
+  document.getElementById('upload-context-bar').style.display = 'block';
+  renderCompleteness();
+  goTo(2);
+}
+
+function showClarifyPanel(questions) {
+  const container = document.getElementById('clarify-questions');
+  container.innerHTML = '';
+  questions.forEach(q => {
+    const wrap = document.createElement('div');
+    wrap.className = 'field-group full';
+    wrap.style.marginBottom = '16px';
+    const label = document.createElement('label');
+    label.textContent = q.question;
+    const textarea = document.createElement('textarea');
+    textarea.rows = 2;
+    textarea.placeholder = 'Your answer… (leave blank to skip)';
+    textarea.dataset.questionText = q.question;
+    textarea.dataset.target = q.target || '';
+    wrap.appendChild(label);
+    wrap.appendChild(textarea);
+    container.appendChild(wrap);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-clarify').classList.add('active');
+  window.scrollTo({ top: 0 });
+}
+
 btnUpload.addEventListener('click', async () => {
-  const spinner = document.getElementById('spinner-1');
-  spinner.style.display = 'block';
+  const progressWrap = document.getElementById('progress-wrap');
+  const fill = document.getElementById('progress-fill');
+  const label = document.getElementById('progress-label');
+  fill.style.width = '0%';
+  label.textContent = 'Uploading and converting documents…';
+  progressWrap.style.display = 'block';
   btnUpload.disabled = true;
   const form = new FormData();
   selectedFiles.forEach(f => form.append('files', f));
   try {
-    const res = await fetch('/upload', { method: 'POST', body: form });
-    const data = await res.json();
-    sessionId = data.session_id;
-    applyFields(data.fields || {});
-    save();
-    goTo(2);
+    const res = await fetch(`/api/projects/${currentProjectId}/upload`, { method: 'POST', body: form });
+    if (!res.ok) throw new Error('Server returned ' + res.status);
+    const { job_id } = await res.json();
+    const job = await pollUploadJob(job_id);
+    latestDraft = job.draft || {};
+    const questions = (latestDraft.ai_suggestions && latestDraft.ai_suggestions.clarifying_questions) || [];
+    if (questions.length) {
+      showClarifyPanel(questions);
+    } else {
+      enterReviewFlow();
+    }
   } catch (e) {
     alert('Upload failed: ' + e.message);
   } finally {
-    spinner.style.display = 'none';
+    progressWrap.style.display = 'none';
     btnUpload.disabled = false;
   }
 });
 
 document.getElementById('btn-skip').addEventListener('click', () => {
-  sessionId = sessionId || crypto.randomUUID();
-  save();
   goTo(2);
+});
+
+async function submitClarify(askMore) {
+  const btn = document.getElementById('btn-clarify-continue');
+  const doneBtn = document.getElementById('btn-clarify-done');
+  const progressWrap = document.getElementById('clarify-progress-wrap');
+  const answers = [...document.querySelectorAll('#clarify-questions textarea')].map(t => ({
+    question: t.dataset.questionText,
+    target: t.dataset.target,
+    answer: t.value.trim(),
+  }));
+  btn.disabled = true;
+  doneBtn.disabled = true;
+  document.getElementById('clarify-progress-fill').style.width = '0%';
+  document.getElementById('clarify-progress-label').textContent = 'Submitting your answers…';
+  progressWrap.style.display = 'block';
+  try {
+    const res = await fetch(`/api/projects/${currentProjectId}/clarify`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ answers, ask_more: askMore }),
+    });
+    if (!res.ok) throw new Error('Server returned ' + res.status);
+    const { job_id } = await res.json();
+    const job = await pollUploadJob(job_id, 'clarify-progress-fill', 'clarify-progress-label');
+    latestDraft = job.draft || latestDraft;
+    const newQuestions = (latestDraft.ai_suggestions && latestDraft.ai_suggestions.clarifying_questions) || [];
+    if (newQuestions.length) {
+      showClarifyPanel(newQuestions);
+    } else {
+      enterReviewFlow();
+    }
+  } catch (e) {
+    alert('Could not process your answers: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    doneBtn.disabled = false;
+    progressWrap.style.display = 'none';
+  }
+}
+
+document.getElementById('btn-clarify-done').addEventListener('click', () => {
+  submitClarify(false);
+});
+
+document.getElementById('btn-clarify-continue').addEventListener('click', () => {
+  submitClarify(true);
 });
 
 // ─────────────────────────────── generate
@@ -632,13 +1167,11 @@ document.getElementById('btn-generate').addEventListener('click', async () => {
   btn.disabled = true;
   try {
     const payload = collect();
-    payload.session_id = sessionId = sessionId || crypto.randomUUID();
-    const res = await fetch('/generate', {
+    const res = await fetch(`/api/projects/${currentProjectId}/generate`, {
       method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error('Server returned ' + res.status);
-    const data = await res.json();
-    document.getElementById('download-link').href = `/download/${data.download_id}`;
+    document.getElementById('download-link').href = `/api/projects/${currentProjectId}/download`;
     goTo(3);
   } catch (e) {
     alert('Generation failed: ' + e.message);
@@ -651,7 +1184,7 @@ document.getElementById('btn-generate').addEventListener('click', async () => {
 // ─────────────────────────────── nav
 
 function goTo(n) {
-  document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', i + 1 === n));
+  document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', i === n));
   document.querySelectorAll('.step').forEach((s, i) => {
     s.classList.toggle('active', i + 1 === n);
     s.classList.toggle('done', i + 1 < n);
@@ -659,24 +1192,11 @@ function goTo(n) {
   window.scrollTo({ top: 0 });
 }
 
-function startOver() {
-  if (!confirm('Clear this plan and start a new one? Your current work will be discarded.')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  sessionId = null;
-  selectedFiles = [];
-  fileList.innerHTML = '';
-  btnUpload.disabled = true;
-  document.querySelectorAll('textarea, #panel-2 input[type=text]').forEach(i => i.value = '');
-  initBlank();
-  document.getElementById('save-state').textContent = '';
-  goTo(1);
-}
-
 // ─────────────────────────────── boot
 
 buildGeneralFields();
 Object.keys(TABLES).forEach(buildTable);
-if (!restore()) initBlank();
+loadProjects();
 document.querySelectorAll('#panel-2 input, #panel-2 textarea').forEach(el => el.addEventListener('input', scheduleSave));
 </script>
 </body>
