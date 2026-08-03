@@ -33,8 +33,6 @@ maintain the resulting Word file themselves.
 
 - Accuracy has only been validated against the fictional LRSBA/MKAE test bundle, not
   real H2M documents — the single biggest open risk before a production pilot.
-- An invalid/expired Anthropic API key currently produces a fully blank plan with no
-  visible error in the UI (logged to stderr as of this fix, not yet surfaced to the UI).
 - The clarify step's "don't repeat questions" logic dedupes by target section
   deterministically, but untargeted questions still rely on the model not repeating
   itself verbatim.
