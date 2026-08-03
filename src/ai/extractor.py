@@ -110,7 +110,8 @@ def _extract_chunk_ollama(chunk: str) -> dict:
             temperature=0,
         )
         return json.loads(resp.choices[0].message.content)
-    except Exception:
+    except Exception as e:
+        print(f"[extract_chunk_ollama] {type(e).__name__}: {e}", file=sys.stderr)
         return {}
 
 
@@ -240,7 +241,8 @@ def _extract_fields_anthropic(
                 value = candidate.get(f)
                 if isinstance(value, str) and value.strip() and _looks_clean(value):
                     fields[f] = value
-    except Exception:
+    except Exception as e:
+        print(f"[extract_fields] {type(e).__name__}: {e}", file=sys.stderr)
         return fields
     return fields
 
@@ -427,7 +429,8 @@ def _extract_narrative_anthropic(
                 if isinstance(value, str) and value.strip() and _looks_clean(value, allow_long=True):
                     result[key] = value
         return result
-    except Exception:
+    except Exception as e:
+        print(f"[extract_narrative] {type(e).__name__}: {e}", file=sys.stderr)
         return result
 
 
@@ -595,7 +598,8 @@ def suggest_gaps(
             "document_suggestions": [s for s in data.get("document_suggestions", []) if _looks_clean(s, allow_long=True)][:4],
             "clarifying_questions": questions[:MAX_CLARIFYING_QUESTIONS],
         }
-    except Exception:
+    except Exception as e:
+        print(f"[suggest_gaps] {type(e).__name__}: {e}", file=sys.stderr)
         return empty
 
 

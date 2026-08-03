@@ -282,12 +282,20 @@ def _run_extraction_job(
             if not draft_fields.get("Client Company") or not draft_fields.get("Project Contact"):
                 empty_sections = [{"key": "", "label": "General Info (contact fields)"}] + empty_sections
             already_asked = draft.get("_asked_questions") or []
-            draft["ai_suggestions"] = suggest_gaps(
-                combined, empty_sections, already_asked, context_md=context_md, pm_answers=pm_answers,
-            )
-            draft["_asked_questions"] = already_asked + [
-                q["question"] for q in draft["ai_suggestions"]["clarifying_questions"]
+            # Targeted dedup is exact regardless of phrasing, unlike the prompt-based
+            # already_asked check below — a section already asked about (by key) is
+            # dropped from what the model can even see, so a reworded repeat can't slip
+            # through. Untargeted questions (target "") still rely on already_asked text.
+            already_asked_targets = set(draft.get("_asked_targets") or [])
+            askable_sections = [
+                s for s in empty_sections if not s["key"] or s["key"] not in already_asked_targets
             ]
+            draft["ai_suggestions"] = suggest_gaps(
+                combined, askable_sections, already_asked, context_md=context_md, pm_answers=pm_answers,
+            )
+            new_questions = draft["ai_suggestions"]["clarifying_questions"]
+            draft["_asked_questions"] = already_asked + [q["question"] for q in new_questions]
+            draft["_asked_targets"] = list(already_asked_targets | {q["target"] for q in new_questions if q["target"]})
 
         save_draft(project_id, draft)
         touch(project_id)
