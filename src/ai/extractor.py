@@ -1,9 +1,33 @@
 import json
 import sys
+import threading
 
 from openai import OpenAI
 
 from ai.settings import load_settings
+
+# Thread-local so concurrent extraction jobs (each runs in its own background thread —
+# see main.py) never see each other's errors. An auth failure, rate limit, or truncated
+# response otherwise looks identical to "the documents genuinely had nothing" — this is
+# how the job that made the call finds out something actually broke.
+_error_local = threading.local()
+
+
+def begin_error_tracking() -> None:
+    _error_local.errors = []
+
+
+def collect_errors() -> list[str]:
+    errors = getattr(_error_local, "errors", [])
+    _error_local.errors = []
+    return errors
+
+
+def _record_error(label: str, e: Exception) -> None:
+    print(f"[{label}] {type(e).__name__}: {e}", file=sys.stderr)
+    errors = getattr(_error_local, "errors", None)
+    if errors is not None:
+        errors.append(f"{label}: {type(e).__name__}: {e}")
 
 
 def _log_usage(label: str, response) -> None:
@@ -242,7 +266,7 @@ def _extract_fields_anthropic(
                 if isinstance(value, str) and value.strip() and _looks_clean(value):
                     fields[f] = value
     except Exception as e:
-        print(f"[extract_fields] {type(e).__name__}: {e}", file=sys.stderr)
+        _record_error("extract_fields", e)
         return fields
     return fields
 
@@ -430,7 +454,7 @@ def _extract_narrative_anthropic(
                     result[key] = value
         return result
     except Exception as e:
-        print(f"[extract_narrative] {type(e).__name__}: {e}", file=sys.stderr)
+        _record_error("extract_narrative", e)
         return result
 
 
@@ -599,7 +623,7 @@ def suggest_gaps(
             "clarifying_questions": questions[:MAX_CLARIFYING_QUESTIONS],
         }
     except Exception as e:
-        print(f"[suggest_gaps] {type(e).__name__}: {e}", file=sys.stderr)
+        _record_error("suggest_gaps", e)
         return empty
 
 

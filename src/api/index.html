@@ -1093,6 +1093,7 @@ btnUpload.addEventListener('click', async () => {
     if (!res.ok) throw new Error('Server returned ' + res.status);
     const { job_id } = await res.json();
     const job = await pollUploadJob(job_id);
+    if (job.warning) alert(job.warning);
     latestDraft = job.draft || {};
     const questions = (latestDraft.ai_suggestions && latestDraft.ai_suggestions.clarifying_questions) || [];
     if (questions.length) {
@@ -1134,6 +1135,7 @@ async function submitClarify(askMore) {
     if (!res.ok) throw new Error('Server returned ' + res.status);
     const { job_id } = await res.json();
     const job = await pollUploadJob(job_id, 'clarify-progress-fill', 'clarify-progress-label');
+    if (job.warning) alert(job.warning);
     latestDraft = job.draft || latestDraft;
     const newQuestions = (latestDraft.ai_suggestions && latestDraft.ai_suggestions.clarifying_questions) || [];
     if (newQuestions.length) {

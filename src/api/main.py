@@ -18,6 +18,8 @@ from ai.extractor import (
     LIST_SECTIONS,
     NARRATIVE_KEYS,
     SECTION_LABELS,
+    begin_error_tracking,
+    collect_errors,
     extract_fields_from_markdown,
     extract_narrative_from_markdown,
     suggest_gaps,
@@ -246,6 +248,7 @@ def _run_extraction_job(
         job["stage"] = stage
         job["pct"] = pct
 
+    begin_error_tracking()
     try:
         draft = load_draft(project_id)
         context_md = _load_context_md()
@@ -299,6 +302,17 @@ def _run_extraction_job(
 
         save_draft(project_id, draft)
         touch(project_id)
+
+        errors = collect_errors()
+        if errors:
+            # A call failed (auth, rate limit, truncation, ...) and fell back to a blank
+            # or partial result — surfaced here so the PM sees a warning instead of
+            # mistaking "the AI call broke" for "the documents had nothing to extract."
+            job["warning"] = (
+                "One or more AI calls failed and returned blank/partial results — check "
+                "the Anthropic API key in Settings, then re-upload or continue in Review "
+                "& Edit and fill in gaps manually. Details logged on the server."
+            )
 
         job["status"] = "done"
         job["stage"] = "Done"
