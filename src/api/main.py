@@ -62,7 +62,15 @@ def slugify(text: str) -> str:
     return slug or "project"
 
 
+_PROJECT_ID_RE = re.compile(r"^[a-z0-9-]+$")
+
+
 def project_dir(project_id: str) -> Path:
+    # project_id reaches here straight from the URL — reject anything that isn't a
+    # slugify()-shaped id before it ever touches the filesystem, so a value like ".."
+    # or "..\\..\\somewhere" can't walk this out of DATA_DIR.
+    if not _PROJECT_ID_RE.match(project_id):
+        raise HTTPException(status_code=404, detail="Project not found")
     d = DATA_DIR / project_id
     if not d.exists():
         raise HTTPException(status_code=404, detail="Project not found")
