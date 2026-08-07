@@ -13,3 +13,12 @@ build/
 # inside H2M's compliance boundary. Backed up to data/_trash/ on delete, never
 # hard-deleted.
 data/
+
+# Project docs — canonical copies live in the Obsidian vault, these are synced
+# duplicates. Vault is the single source of truth; don't fork them here.
+Active.md
+Architecture.md
+Decisions.md
+Features.md
+Overview.md
+Production Plan.md
